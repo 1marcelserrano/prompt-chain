@@ -1,6 +1,8 @@
 ---
 name: prompt-chain
+version: 1.0
 description: Use this skill whenever the user wants to break a complex multi-step task into a sequence of prompts, each executed in a fresh chat session with full context carried forward. Trigger phrases in PT-BR and EN — "executar por etapas em chats separados", "cada etapa em um novo chat", "prompt autocontido autopropagante", "prompt que gera o próximo", "quero passar esse trabalho para vários chats", "cold start entre chats", "monte um prompt que eu colo em outro chat", "chain of prompts", "self-propagating prompt", "split this across sessions". Also trigger when the user has a long multi-phase task (P0 → P1 → P2), when they mention context limits or fresh sessions, or when they want to isolate execution between phases. Don't wait for exact wording — if the user is trying to distribute sequential work across multiple chat sessions with context preservation, invoke this skill.
+changelog: "V1.0 — release inicial. Skill fundacional de chains autopropagantes com protocolos PROPAGATION / CHAIN PAUSED / CHAIN COMPLETE."
 ---
 
 # Prompt Chain

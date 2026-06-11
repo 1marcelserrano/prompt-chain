@@ -1,8 +1,12 @@
 # prompt-chain
 
+**English** · [Português](./skills/prompt-chain/SKILL.pt-BR.md)
+
 **Break complex multi-step tasks into self-propagating prompts that survive context limits.**
 
-[Install](#install) • [How it works](#how-it-works) • [When to use](#when-to-use) • [Why](#why)
+The whole skill is one 307-line markdown file. No dependencies, no server, no external state store. Built for anyone running long multi-phase work in Claude — developers and non-developers alike.
+
+[Install](#install) • [How it works](#how-it-works) • [When to use](#when-to-use) • [FAQ](#faq)
 
 ---
 
@@ -11,6 +15,15 @@ generates the next, carrying full context forward. Cold-start safe.
 Context-limit immune.
 
 ## How it works
+
+```mermaid
+flowchart LR
+    A[You paste<br>STAGE 1] --> B[Chat 1 executes<br>+ emits STAGE 2 prompt]
+    B -->|copy-paste| C[Chat 2 executes<br>+ emits STAGE 3 prompt]
+    C -->|copy-paste| D[Chat N executes]
+    D --> E[CHAIN COMPLETE<br>all deliverables listed]
+    B -.blocker.-> P[CHAIN PAUSED<br>asks, never guesses]
+```
 
 | Without prompt-chain | With prompt-chain |
 |----------------------|-------------------|
@@ -24,10 +37,15 @@ Same work. Half the friction. No mid-session collapse.
 # Via skills CLI (recommended)
 npx skills add 1marcelserrano/prompt-chain
 
-# Or manually
+# Or manually — back up first if the folder already exists:
+# mv ~/.claude/skills/prompt-chain ~/.claude/skills/prompt-chain.backup
 git clone https://github.com/1marcelserrano/prompt-chain.git
 cp -r prompt-chain/skills/prompt-chain ~/.claude/skills/
 ```
+
+**Verify:** open a new Claude session and run `/skills` (or ask "what skills do you have?"). `prompt-chain` should be listed. If it isn't, check that `~/.claude/skills/prompt-chain/SKILL.md` exists and restart the session.
+
+**Update:** `git pull` in the cloned repo, then re-copy. New versions are logged in [CHANGELOG.md](./CHANGELOG.md).
 
 ## When to use
 
@@ -61,6 +79,26 @@ for it to be split.
 | Pass context forward via prompt text | Use external state stores |
 | Auto-detect chainable patterns | Force-chain trivial single-step tasks |
 | Work in any chat-based Claude interface | Require a specific platform |
+
+## FAQ
+
+**Does it send my data anywhere?**
+No. The skill is a markdown file Claude reads locally. Your prompts and context stay inside your normal Claude sessions — nothing extra is stored or transmitted.
+
+**How do I uninstall?**
+Delete the folder: `rm -rf ~/.claude/skills/prompt-chain`. Done.
+
+**What does it work with?**
+Any chat-based Claude interface: Claude Code (CLI/desktop), Claude.ai, Claude Cowork. macOS, Linux, Windows — it's just markdown.
+
+**Will it be maintained?**
+Yes. Versions follow [CHANGELOG.md](./CHANGELOG.md). Update with `git pull` or re-run `npx skills add`.
+
+## About the author
+
+Built by [Marcel Serrano](https://github.com/1marcelserrano), founder of [MSCREATIVE.SYSTEMS™](https://mscreative.systems) — Barcelona. This skill is the propagation backbone behind the MSCS editorial and skill ecosystem.
+
+More on working with AI without losing your own voice: [Fronteirista](https://fronteirista.substack.com) — the free newsletter where these systems get built in public.
 
 ## Contributing
 

@@ -28,3 +28,5 @@ venv/
 dist/
 build/
 *.skill
+# Exception: packaged skill shipped at root for no-terminal install (checklist V11)
+!/prompt-chain.skill

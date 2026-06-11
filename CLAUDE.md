@@ -9,7 +9,8 @@ of truth is `skills/prompt-chain/SKILL.md`. Every behavioral change starts there
 
 | File | What it controls |
 |------|------------------|
-| `skills/prompt-chain/SKILL.md` | Skill behavior — triggers, workflow, output format. The body the agent loads. |
+| `skills/prompt-chain/SKILL.md` | Skill behavior — triggers, workflow, output format. The body the agent loads. English, canonical. |
+| `skills/prompt-chain/SKILL.pt-BR.md` | Portuguese translation. Mirror behavioral changes here after SKILL.md stabilizes. |
 | `skills/prompt-chain/README.md` | Per-skill human-facing summary. |
 | `README.md` (root) | Product front door. Optimize for non-technical readers. Before/After table is the pitch. |
 | `CONTRIBUTING.md` | How to contribute. |

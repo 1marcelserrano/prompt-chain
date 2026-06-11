@@ -1,307 +1,309 @@
 ---
 name: prompt-chain
-version: 1.0
+version: 2.0.0
 description: Use this skill whenever the user wants to break a complex multi-step task into a sequence of prompts, each executed in a fresh chat session with full context carried forward. Trigger phrases in PT-BR and EN — "executar por etapas em chats separados", "cada etapa em um novo chat", "prompt autocontido autopropagante", "prompt que gera o próximo", "quero passar esse trabalho para vários chats", "cold start entre chats", "monte um prompt que eu colo em outro chat", "chain of prompts", "self-propagating prompt", "split this across sessions". Also trigger when the user has a long multi-phase task (P0 → P1 → P2), when they mention context limits or fresh sessions, or when they want to isolate execution between phases. Don't wait for exact wording — if the user is trying to distribute sequential work across multiple chat sessions with context preservation, invoke this skill.
-changelog: "V1.0 — release inicial. Skill fundacional de chains autopropagantes com protocolos PROPAGATION / CHAIN PAUSED / CHAIN COMPLETE."
+changelog: "V2.0.0 — English as canonical skill body; PT-BR preserved as SKILL.pt-BR.md"
 ---
 
 # Prompt Chain
 
-Transforma uma tarefa multi-etapas em uma cadeia de prompts autocontidos, onde cada prompt executa um stage em um chat novo e emite, junto ao output, o prompt do próximo stage já com o contexto acumulado. O usuário só precisa copiar-colar entre chats — a chain se propaga sozinha até `CHAIN COMPLETE`.
+Turns a multi-step task into a chain of self-contained prompts. Each prompt runs one stage in a fresh chat and ends by emitting the next stage's prompt with the accumulated context already inside it. The user only copies and pastes between chats — the chain propagates itself until `CHAIN COMPLETE`.
 
-## Quando usar
+## When to use
 
-- Tarefa grande com fases distintas (P0 → P1 → P2), cada uma com entregáveis próprios
-- Usuário quer isolar contexto entre etapas (novo chat = memória limpa, cache frio, execução isolada)
-- Usuário pede explicitamente "um prompt que gera o próximo" ou equivalente
-- Trabalho que se beneficia de pausar entre stages para revisar output antes de continuar
-- Ambientes onde o mesmo agente não pode rodar a cadeia toda (limite de sessão, política de auditoria, troca de modelo)
+- Large task with distinct phases (P0 → P1 → P2), each with its own deliverables
+- User wants to isolate context between stages (new chat = clean memory, cold cache, isolated execution)
+- User explicitly asks for "a prompt that generates the next one" or equivalent
+- Work that benefits from pausing between stages to review output before continuing
+- Environments where the same agent can't run the whole chain (session limits, audit policy, model switching)
 
-## Quando NÃO usar
+## When NOT to use
 
-- Tarefa de um passo só → resolva direto, sem overhead
-- Tarefa onde o estado intermediário cabe numa sessão e não há risco de estouro → TodoWrite + execução direta é melhor
-- Tarefa exploratória sem entregáveis discretos → chain pressupõe stages com Definition of Done claro
-- Paralelismo (chains são sequenciais por natureza) → use subagents em paralelo
+- Single-step task → solve it directly, no overhead
+- Task whose intermediate state fits in one session with no risk of overflow → TodoWrite + direct execution is better
+- Exploratory work without discrete deliverables → a chain assumes stages with a clear Definition of Done
+- Parallelism (chains are sequential by nature) → use parallel subagents instead
 
 ## Mental model
 
-Uma chain é uma sequência de stages. Cada stage:
-1. Recebe um prompt autocontido (pasteável cold em chat novo)
-2. Executa uma fatia do trabalho
-3. Emite o prompt do próximo stage com contexto atualizado
+A chain is a sequence of stages. Each stage:
+1. Receives a self-contained prompt (pasteable cold into a new chat)
+2. Executes one slice of the work
+3. Emits the next stage's prompt with updated context
 
-O pulo do gato: **contexto estável vs contexto dinâmico**.
+The key insight: **stable context vs dynamic context**.
 
-- **Estável** — workspace path, design system, voz da marca, restrições globais, objetivo final. Copiado verbatim em todos os stages.
-- **Dinâmico** — estado atual dos arquivos, decisões tomadas, bloqueios encontrados. Atualizado stage a stage.
+- **Stable** — workspace path, design system, brand voice, global constraints, final goal. Copied verbatim into every stage.
+- **Dynamic** — current file state, decisions made, blockers found. Updated stage by stage.
 
-Se a chain perder contexto estável, o próximo chat refaz decisões. Se perder contexto dinâmico, refaz trabalho. Ambas as falhas destroem o valor.
+If the chain loses stable context, the next chat re-makes decisions. If it loses dynamic context, it redoes work. Either failure destroys the value.
 
-## Como montar uma chain
+## How to build a chain
 
-### Passo 1 — Delimite a tarefa e extraia contexto estável
+### Step 1 — Scope the task and extract stable context
 
-Antes de decompor, separe:
+Before decomposing, separate out:
 
-- **Objetivo final** — o que significa "chain completa"? Enunciado único e verificável.
-- **Workspace** — caminho absoluto + convenções (pasta de escrita, naming, idioma).
-- **Restrições que não mudam** — design system, compliance, voz da marca, formato de output.
-- **Decisões já tomadas** — o que o usuário já definiu e não será reaberto.
-- **Ambiente alvo** — Claude Code / Cowork / Claude.ai Chat. Cada um tem tools diferentes.
+- **Final goal** — what does "chain complete" mean? A single, verifiable statement.
+- **Workspace** — absolute path + conventions (output folder, naming, language).
+- **Constraints that don't change** — design system, compliance, brand voice, output format.
+- **Decisions already made** — what the user has settled and won't reopen.
+- **Target environment** — Claude Code / Cowork / Claude.ai Chat. Each has different tools.
 
-Esse conjunto vai na seção CONTEXTO HERDADO de todos os stages, inalterado.
+This set goes into the INHERITED CONTEXT section of every stage, unchanged.
 
-### Passo 2 — Decomponha em 2 a 6 stages
+### Step 2 — Decompose into 2 to 6 stages
 
-**Heurísticas de corte:**
-- Cada stage tem um deliverable concreto e verificável (arquivo criado, decisão tomada, output validado)
-- Um stage não depende do estado interno do anterior (variáveis, buffers) — só de arquivos e decisões registradas
-- Priorize por dependência e risco: P0 (bloqueadores) → P1 (alto impacto) → P2 (polish)
+**Cutting heuristics:**
+- Each stage has a concrete, verifiable deliverable (file created, decision made, output validated)
+- A stage never depends on the previous stage's internal state (variables, buffers) — only on files and recorded decisions
+- Prioritize by dependency and risk: P0 (blockers) → P1 (high impact) → P2 (polish)
 
-**Número ideal:**
-- **2 stages** — divisão natural em "construir" → "validar/polish"
-- **3–4 stages** — sweet spot para a maioria dos casos
-- **5–6 stages** — só quando cada fase tem > 10 min de trabalho próprio
-- **> 6** — re-agrupe. A chain está fatiada demais e o overhead supera o ganho.
+**Ideal count:**
+- **2 stages** — natural split into "build" → "validate/polish"
+- **3–4 stages** — sweet spot for most cases
+- **5–6 stages** — only when each phase carries > 10 min of work on its own
+- **> 6** — regroup. The chain is sliced too thin and the overhead outweighs the gain.
 
-**Teste dos 10 minutos:** se um stage leva < 5 min de trabalho real, combine com o vizinho. Se leva > 30 min, quebre. Alvo: 10–20 min por stage.
+**The 10-minute test:** if a stage takes < 5 min of real work, merge it with its neighbor. If it takes > 30 min, split it. Target: 10–20 min per stage.
 
-### Passo 3 — Redija o Stage 1 (prompt-semente)
+### Step 3 — Write Stage 1 (the seed prompt)
 
-Use o template canônico da próxima seção. Este é o único prompt que o usuário cola manualmente; os demais a chain gera sozinha.
+Use the canonical template in the next section. This is the only prompt the user pastes manually; the chain generates the rest on its own.
 
-### Passo 4 — Entregue ao usuário
+### Step 4 — Hand it to the user
 
-Entregue o Stage 1 em bloco de código copiável, com uma instrução curta de uso acima:
+Deliver Stage 1 as a copyable code block, with a short usage instruction above it:
 
-> 1. Abra chat novo no ambiente [X]
-> 2. Cole o bloco STAGE 1
-> 3. Ao final da resposta, copie o bloco `### PRÓXIMO PROMPT — STAGE 2` e cole em novo chat
-> 4. Repita até `CHAIN COMPLETE`
+> 1. Open a new chat in environment [X]
+> 2. Paste the STAGE 1 block
+> 3. At the end of the response, copy the `### NEXT PROMPT — STAGE 2` block and paste it into a new chat
+> 4. Repeat until `CHAIN COMPLETE`
 
-## Template canônico de STAGE
+## Canonical STAGE template
 
-Copie-colando verbatim, ajustando conteúdo. Todo stage da chain usa essa estrutura.
+Copy-paste verbatim, adjusting the content. Every stage in the chain uses this structure.
 
 ````markdown
-# STAGE N/TOTAL — [NOME_CURTO]
-# Chain: "[NOME DA CHAIN]"
+# STAGE N/TOTAL — [SHORT_NAME]
+# Chain: "[CHAIN NAME]"
 
 ## CHAIN META
 - Total stages: TOTAL
 - Current stage: N/TOTAL
-- Stage 1 objetivo: [...]
-- Stage 2 objetivo: [...]
-- (todos os stages resumidos em uma linha cada)
+- Stage 1 goal: [...]
+- Stage 2 goal: [...]
+- (every stage summarized in one line each)
 
 ## WORKSPACE
-Absolute path: `[caminho absoluto]`
-Ambiente alvo: [Claude Code / Cowork / Chat]
-[Convenções relevantes: pasta de escrita, naming, idioma]
+Absolute path: `[absolute path]`
+Target environment: [Claude Code / Cowork / Chat]
+[Relevant conventions: output folder, naming, language]
 
-## CONTEXTO HERDADO — LEITURA OBRIGATÓRIA
+## INHERITED CONTEXT — REQUIRED READING
 
-### Objetivo da chain
-[Enunciado único do que significa chain completa]
+### Chain goal
+[Single statement of what "chain complete" means]
 
-### Decisões já tomadas
-- [decisão 1 — não reabrir]
-- [decisão 2 — não reabrir]
+### Decisions already made
+- [decision 1 — do not reopen]
+- [decision 2 — do not reopen]
 
-### Estado atual auditado ([YYYY-MM-DD])
-- ✅ EXISTE: [arquivos criados por stages anteriores]
-- ❌ NÃO EXISTE: [arquivos faltantes]
+### Current state audited ([YYYY-MM-DD])
+- ✅ EXISTS: [files created by previous stages]
+- ❌ MISSING: [missing files]
 - ⚠️ [nuances, warnings, gotchas]
 
-### [Contexto estável: design system / voz / compliance / etc.]
-[Blocos literais, copiados verbatim em todos os stages]
+### [Stable context: design system / voice / compliance / etc.]
+[Literal blocks, copied verbatim into every stage]
 
-## TAREFA DESTE STAGE
-1. [ação concreta com critério de "feito"]
-2. [ação concreta com critério de "feito"]
+## THIS STAGE'S TASK
+1. [concrete action with a "done" criterion]
+2. [concrete action with a "done" criterion]
 ...
 
-## RESTRIÇÕES
-- [o que NÃO fazer neste stage — arquivos intocáveis, decisões congeladas]
+## CONSTRAINTS
+- [what NOT to do in this stage — untouchable files, frozen decisions]
 
 ## DELIVERABLES
-1. [arquivo/output 1]
-2. [arquivo/output 2]
+1. [file/output 1]
+2. [file/output 2]
 ...
-N. **OBRIGATÓRIO**: bloco `### PRÓXIMO PROMPT — STAGE N+1` ao final (ou `### CHAIN COMPLETE` se N = TOTAL)
+N. **REQUIRED**: a `### NEXT PROMPT — STAGE N+1` block at the end (or `### CHAIN COMPLETE` if N = TOTAL)
 
-## PROPAGATION PROTOCOL — CRÍTICO
-Ao final da sua resposta, emita um bloco de código markdown contendo o prompt completo e autocontido para Stage N+1. O próximo chat terá ZERO memória deste. O prompt de Stage N+1 deve:
+## PROPAGATION PROTOCOL — CRITICAL
+At the end of your response, emit a markdown code block containing the complete, self-contained prompt for Stage N+1. The next chat will have ZERO memory of this one. The Stage N+1 prompt must:
 
-- Abrir com `# STAGE N+1/TOTAL — [NOME]`
-- Copiar verbatim CHAIN META, WORKSPACE, e todo CONTEXTO HERDADO estável (design system / voz / compliance) deste prompt
-- Atualizar "Decisões já tomadas" e "Estado atual auditado" com o que você acabou de fazer
-- Substituir TAREFA pela lista de ações do Stage N+1 (ver CHAIN META acima)
-- Incluir o mesmo PROPAGATION PROTOCOL para Stage N+2 (ou substituir por FINAL TERMINATION se Stage N+1 for o último)
+- Open with `# STAGE N+1/TOTAL — [NAME]`
+- Copy CHAIN META, WORKSPACE, and all stable INHERITED CONTEXT (design system / voice / compliance) from this prompt verbatim
+- Update "Decisions already made" and "Current state audited" with what you just did
+- Replace the TASK with Stage N+1's action list (see CHAIN META above)
+- Include this same PROPAGATION PROTOCOL for Stage N+2 (or replace it with FINAL TERMINATION if Stage N+1 is the last)
 
-Se este stage não puder ser completado (bloqueio, ambiguidade, input faltante), emita no lugar do próximo prompt um bloco `### CHAIN PAUSED` (ver protocolos).
+If this stage cannot be completed (blocker, ambiguity, missing input), emit a `### CHAIN PAUSED` block instead of the next prompt (see protocols).
 ````
 
-## Protocolos de transição
+## Transition protocols
 
-### PROPAGATION PROTOCOL (stage → próximo stage)
+### PROPAGATION PROTOCOL (stage → next stage)
 
-Toda resposta de stage não-final termina com o header:
+Every non-final stage response ends with the header:
 
 ```
-### PRÓXIMO PROMPT — STAGE N+1
+### NEXT PROMPT — STAGE N+1
 ```
 
-Seguido por um bloco de código markdown fechado. **Atenção ao escape de fences**: como o conteúdo do próximo prompt contém crases triplas, use fence com **4 crases** no bloco externo (ou `~~~~` como alternativa). Isso evita que o parser feche o bloco cedo.
+Followed by a closed markdown code block. **Watch the fence escaping**: since the next prompt's content contains triple backticks, use a **4-backtick** fence on the outer block (or `~~~~` as an alternative). This keeps the parser from closing the block early.
 
-Princípios:
-- **Nunca abrevie com "igual ao anterior"** — o próximo chat não tem o anterior
-- **Copiar contexto estável verbatim é o comportamento correto**, não redundância
-- **Atualize apenas campos dinâmicos**: Decisões já tomadas, Estado atual auditado, TAREFA DESTE STAGE
-- **Mantenha o PROPAGATION PROTOCOL intacto** dentro do próximo stage, apontando para o stage seguinte
-- **Ajuste o "Current stage"** e atualize o DoD de Stage N+1 com base no que foi feito agora
+Principles:
+- **Never abbreviate with "same as before"** — the next chat doesn't have the previous one
+- **Copying stable context verbatim is the correct behavior**, not redundancy
+- **Update only the dynamic fields**: Decisions already made, Current state audited, THIS STAGE'S TASK
+- **Keep the PROPAGATION PROTOCOL intact** inside the next stage, pointing to the stage after it
+- **Adjust "Current stage"** and update Stage N+1's DoD based on what was just done
 
-### CHAIN PAUSED (bloqueio)
+### CHAIN PAUSED (blocker)
 
-Quando um stage não pode ser completado sem input humano, substitua o bloco de próximo prompt por:
+When a stage cannot be completed without human input, replace the next-prompt block with:
 
 ```markdown
 ### CHAIN PAUSED
 
-**O que foi feito:**
+**What was done:**
 - [...]
 
-**Bloqueio:**
-[descrição do que impede progressão]
+**Blocker:**
+[description of what prevents progress]
 
-**Pergunta para o usuário:**
-[pergunta direta, única, com opções quando possível]
+**Question for the user:**
+[a single, direct question, with options when possible]
 
-**Como retomar:**
-Responda à pergunta acima. Em seguida, copie este mesmo prompt de STAGE N em chat novo, acrescentando no início uma seção "## DECISÃO DO USUÁRIO" com a resposta. A chain continua a partir daqui.
+**How to resume:**
+Answer the question above. Then paste this same STAGE N prompt into a new chat, adding a "## USER DECISION" section at the top with the answer. The chain continues from here.
 ```
 
-**Regra-mestra:** pausar é sempre preferível a adivinhar. Adivinhar no stage N contamina todos os stages seguintes e o usuário só descobre o erro no final.
+**Master rule:** pausing always beats guessing. A guess at stage N contaminates every following stage, and the user only finds the error at the end.
 
-### CHAIN COMPLETE (último stage)
+**Refine, don't just halt:** if the environment has the AskUserQuestion tool, use it at the moment of the pause — put the blocker to the user as a direct question with 2–4 concrete options (each with its trade-off), and apply the answer to refine the approach before emitting the resume prompt. The CHAIN PAUSED block still gets emitted; AskUserQuestion runs alongside it so the decision lands now instead of in the next chat. In environments without the tool, the block's written question is the fallback.
 
-O último stage substitui o bloco de próximo prompt por:
+### CHAIN COMPLETE (last stage)
+
+The last stage replaces the next-prompt block with:
 
 ```markdown
 ### CHAIN COMPLETE
 
-**Objetivo da chain:**
-[enunciado original da CHAIN META]
+**Chain goal:**
+[original statement from CHAIN META]
 
-**Entregáveis finais:**
-- [arquivo 1 — caminho]
-- [arquivo 2 — caminho]
+**Final deliverables:**
+- [file 1 — path]
+- [file 2 — path]
 ...
 
-**Decisões registradas durante a chain:**
+**Decisions recorded during the chain:**
 - Stage 1: [...]
 - Stage 2: [...]
 ...
 
-**Próximos passos fora da chain:**
-[se houver — deploy, revisão humana, publicação]
+**Next steps outside the chain:**
+[if any — deploy, human review, publication]
 ```
 
-Esse bloco funciona como acta da chain — o usuário arquiva junto com os entregáveis e tem rastro do que foi decidido.
+This block works as the chain's minutes — the user files it with the deliverables and keeps a trail of what was decided.
 
-## Heurísticas de decomposição
+## Decomposition heuristics
 
-**Separe por tipo de risco:**
-- Decisões irreversíveis primeiro (criar estrutura, escolher formato, empacotar)
-- Edições reversíveis depois (ajustes, refinamentos, polish)
-- Validação por último (QA, contagem, contraste, cross-browser)
+**Separate by type of risk:**
+- Irreversible decisions first (creating structure, choosing format, packaging)
+- Reversible edits next (adjustments, refinements, polish)
+- Validation last (QA, counts, contrast, cross-browser)
 
-**Um stage = um contexto de execução:**
-Se dois passos usam o mesmo conjunto de arquivos e o mesmo mindset, coloque no mesmo stage. Se precisam de modos mentais diferentes (construir vs. auditar, escrever vs. testar), separe.
+**One stage = one execution context:**
+If two steps use the same set of files and the same mindset, put them in the same stage. If they need different mental modes (build vs. audit, write vs. test), separate them.
 
-**DoD antes de redigir:**
-Antes de escrever o stage N, enuncie em voz alta: *"Stage N está pronto quando [X] existe e [Y] é verdadeiro."* Se não consegue enunciar, o stage está mal definido — redesenhe antes de continuar.
+**DoD before writing:**
+Before writing stage N, state it out loud: *"Stage N is done when [X] exists and [Y] is true."* If you can't state it, the stage is poorly defined — redesign it before continuing.
 
-**Regra da amnésia:**
-Para cada stage, pergunte: *"Se um agente completamente diferente abrisse este prompt sem contexto algum, ele teria tudo que precisa?"* Se não, o CONTEXTO HERDADO está frouxo.
+**The amnesia rule:**
+For each stage, ask: *"If a completely different agent opened this prompt with no context at all, would it have everything it needs?"* If not, the INHERITED CONTEXT is too loose.
 
-## Contexto estável forte — checklist
+## Strong stable context — checklist
 
-O usuário paga o preço da chain se o contexto estável estiver incompleto. Inclua sempre que aplicável:
+The user pays the chain's price when stable context is incomplete. Include whenever applicable:
 
-- [ ] Caminho absoluto do workspace (não relativo)
-- [ ] Ambiente alvo (Claude Code / Cowork / Chat) — muda as tools disponíveis
-- [ ] Design system / tokens inline no prompt (não "ver arquivo X")
-- [ ] Voz e tom da marca (se relevante)
-- [ ] Compliance / regras invioláveis (se houver)
-- [ ] Convenções (naming, formato de data, idioma)
-- [ ] Objetivo final da chain (não só deste stage)
+- [ ] Absolute workspace path (not relative)
+- [ ] Target environment (Claude Code / Cowork / Chat) — it changes the available tools
+- [ ] Design system / tokens inline in the prompt (not "see file X")
+- [ ] Brand voice and tone (if relevant)
+- [ ] Compliance / hard rules (if any)
+- [ ] Conventions (naming, date format, language)
+- [ ] The chain's final goal (not just this stage's)
 
-## Exemplo mínimo — chain de 2 stages
+## Minimal example — 2-stage chain
 
-Cenário: refatorar `styles.css` + validar responsivo.
+Scenario: refactor `styles.css` + validate responsive behavior.
 
-**Stage 1 — o que o usuário cola:**
+**Stage 1 — what the user pastes:**
 
 ````markdown
-# STAGE 1/2 — REFATORAR CSS
-# Chain: "CSS Cleanup + Responsivo"
+# STAGE 1/2 — REFACTOR CSS
+# Chain: "CSS Cleanup + Responsive"
 
 ## CHAIN META
 - Total stages: 2
 - Current stage: 1/2
-- Stage 1: extrair tokens + consolidar duplicações
-- Stage 2: testar viewports + ajustes finais
+- Stage 1: extract tokens + consolidate duplicates
+- Stage 2: test viewports + final adjustments
 
 ## WORKSPACE
-Absolute path: `/Users/nome/projeto/`
-Ambiente alvo: Claude Code
+Absolute path: `/Users/name/project/`
+Target environment: Claude Code
 
-## CONTEXTO HERDADO
+## INHERITED CONTEXT
 
-### Objetivo da chain
-Reduzir styles.css de 1200 → < 600 linhas mantendo output visual idêntico em 320px, 768px e 1440px.
+### Chain goal
+Reduce styles.css from 1200 → < 600 lines keeping visual output identical at 320px, 768px, and 1440px.
 
-### Decisões já tomadas
-- Usar CSS custom properties (não Sass)
-- Manter convenção BEM
-- Sem pré-processadores
+### Decisions already made
+- Use CSS custom properties (not Sass)
+- Keep the BEM convention
+- No preprocessors
 
-### Estado atual auditado (2026-04-23)
-- ✅ EXISTE: styles.css (1247 linhas, muitas duplicações)
-- ❌ NÃO EXISTE: arquivo de tokens
+### Current state audited (2026-04-23)
+- ✅ EXISTS: styles.css (1247 lines, many duplicates)
+- ❌ MISSING: tokens file
 
-## TAREFA DESTE STAGE
-1. Mapear seletores duplicados em styles.css
-2. Extrair valores repetidos para custom properties em :root
-3. Consolidar regras equivalentes
-4. Salvar resultado — deve estar < 700 linhas
+## THIS STAGE'S TASK
+1. Map duplicate selectors in styles.css
+2. Extract repeated values into custom properties in :root
+3. Consolidate equivalent rules
+4. Save the result — must be < 700 lines
 
-## RESTRIÇÕES
-- Não alterar output visual (mesma hierarquia, mesmas cores finais)
-- Não remover seletores usados no HTML
+## CONSTRAINTS
+- Do not change visual output (same hierarchy, same final colors)
+- Do not remove selectors used in the HTML
 
 ## DELIVERABLES
-1. styles.css refatorado
-2. Bloco `### PRÓXIMO PROMPT — STAGE 2`
+1. Refactored styles.css
+2. A `### NEXT PROMPT — STAGE 2` block
 
 ## PROPAGATION PROTOCOL
-[...instrução completa como no template...]
+[...full instruction as in the template...]
 ````
 
-**Stage 2 — emitido pelo agente que rodou o Stage 1**, já com:
-- Estado atual atualizado (styles.css agora tem X linhas, Y tokens extraídos)
-- TAREFA trocada para validação responsiva
-- PROPAGATION PROTOCOL substituído por FINAL TERMINATION (próxima emissão será `### CHAIN COMPLETE`)
+**Stage 2 — emitted by the agent that ran Stage 1**, already carrying:
+- Updated current state (styles.css now has X lines, Y tokens extracted)
+- TASK swapped for responsive validation
+- PROPAGATION PROTOCOL replaced by FINAL TERMINATION (the next emission will be `### CHAIN COMPLETE`)
 
-## Sinal de skill bem aplicada
+## Signs the skill was applied well
 
-A chain está bem montada quando:
+The chain is well built when:
 
-- Cada prompt emitido é colável cold em chat novo sem edição manual
-- O último stage emite `### CHAIN COMPLETE` com todos os deliverables listados
-- O usuário não precisou explicar nada de novo entre stages
-- Se um stage falhou, emitiu `### CHAIN PAUSED` com pergunta direta — não adivinhou
+- Every emitted prompt pastes cold into a new chat with no manual editing
+- The last stage emits `### CHAIN COMPLETE` with every deliverable listed
+- The user never had to explain anything again between stages
+- If a stage failed, it emitted `### CHAIN PAUSED` with a direct question — it didn't guess
 
-O valor da skill: o usuário passa de *"preciso explicar de novo cada vez que abro um chat"* para *"colou, chain rodou"*.
+The skill's value: the user goes from *"I have to explain everything again every time I open a chat"* to *"pasted it, chain ran."*

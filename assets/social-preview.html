@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!-- Social preview 1280×640 — DS V3.0 (design-system-beta.vercel.app)
+     Render: Chrome headless, --window-size=1280,640 --force-device-scale-factor=2
+     Upload: repo Settings → Social preview -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter+Tight:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .canvas {
+    width: 1280px; height: 640px; position: relative; overflow: hidden;
+    background: linear-gradient(160deg, #0A0A0E 0%, #111114 100%);
+    background-image:
+      linear-gradient(rgba(178,168,152,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(178,168,152,0.05) 1px, transparent 1px),
+      linear-gradient(160deg, #0A0A0E 0%, #111114 100%);
+    background-size: 54px 54px, 54px 54px, 100% 100%;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 96px;
+  }
+  .kicker {
+    font-family: 'IBM Plex Mono', monospace; font-size: 18px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: #A85A30; margin-bottom: 28px;
+  }
+  .title {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 76px;
+    line-height: 1.05; color: #B2A898; max-width: 1000px;
+    margin-bottom: 28px;
+  }
+  .subtitle {
+    font-family: 'Inter Tight', sans-serif; font-size: 28px; line-height: 1.4;
+    color: rgba(178,168,152,0.72); max-width: 860px;
+  }
+  .footer {
+    position: absolute; bottom: 48px; left: 96px; right: 96px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 16px;
+    color: rgba(178,168,152,0.5); letter-spacing: 0.08em;
+  }
+  .seal { color: #E8C547; } /* ouro cerimonial — SÓ no selo */
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="kicker">CLAUDE SKILL · SELF-PROPAGATING</div>
+  <div class="title">prompt-chain</div>
+  <div class="subtitle">Each prompt runs one stage and writes the next. Paste, run, repeat — context survives the chat.</div>
+  <div class="footer">
+    <span>github.com/1marcelserrano/prompt-chain</span>
+    <span class="seal">MSCREATIVE.SYSTEMS™</span>
+  </div>
+</div>
+</body>
+</html>

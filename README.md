@@ -80,6 +80,18 @@ for it to be split.
 | Auto-detect chainable patterns | Force-chain trivial single-step tasks |
 | Work in any chat-based Claude interface | Require a specific platform |
 
+## vs. session-handoff tools
+
+Tools like [handoff](https://github.com/thepushkarp/handoff) snapshot a session's state so you can resume it later. Useful, and a different job:
+
+| Session-handoff tools | prompt-chain |
+|---|---|
+| React when a session fills up — save state, resume later. | Plan the whole crossing upfront — N stages, each with its own Definition of Done. |
+| One link at a time. | The full chain is designed before stage 1 runs. |
+| Usually tied to Claude Code (filesystem + hooks). | Any chat interface — state travels inside the prompt text itself. |
+
+Use handoff when a session surprises you. Use prompt-chain when you can see the phases coming.
+
 ## FAQ
 
 **Does it send my data anywhere?**

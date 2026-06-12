@@ -1,8 +1,8 @@
 ---
 name: prompt-chain
-version: 2.0.0
+version: 2.1.0
 description: Use this skill whenever the user wants to break a complex multi-step task into a sequence of prompts, each executed in a fresh chat session with full context carried forward. Trigger phrases in PT-BR and EN — "executar por etapas em chats separados", "cada etapa em um novo chat", "prompt autocontido autopropagante", "prompt que gera o próximo", "quero passar esse trabalho para vários chats", "cold start entre chats", "monte um prompt que eu colo em outro chat", "chain of prompts", "self-propagating prompt", "split this across sessions". Also trigger when the user has a long multi-phase task (P0 → P1 → P2), when they mention context limits or fresh sessions, or when they want to isolate execution between phases. Don't wait for exact wording — if the user is trying to distribute sequential work across multiple chat sessions with context preservation, invoke this skill.
-changelog: "V2.0.0 — English as canonical skill body; PT-BR preserved as SKILL.pt-BR.md"
+changelog: "V2.1.0 — secret sanitization, failed-approaches ledger (⛔ FAILED), reference-over-paste rule, context-budget pruning. V2.0.0 — English as canonical skill body; PT-BR preserved as SKILL.pt-BR.md"
 ---
 
 # Prompt Chain
@@ -113,6 +113,7 @@ Target environment: [Claude Code / Cowork / Chat]
 - ✅ EXISTS: [files created by previous stages]
 - ❌ MISSING: [missing files]
 - ⚠️ [nuances, warnings, gotchas]
+- ⛔ FAILED: [approaches already tried that did not work, with the error — do not retry]
 
 ### [Stable context: design system / voice / compliance / etc.]
 [Literal blocks, copied verbatim into every stage]
@@ -158,9 +159,13 @@ Followed by a closed markdown code block. **Watch the fence escaping**: since th
 Principles:
 - **Never abbreviate with "same as before"** — the next chat doesn't have the previous one
 - **Copying stable context verbatim is the correct behavior**, not redundancy
-- **Update only the dynamic fields**: Decisions already made, Current state audited, THIS STAGE'S TASK
+- **Update only the dynamic fields**: Decisions already made, Current state audited, Failed approaches, THIS STAGE'S TASK
 - **Keep the PROPAGATION PROTOCOL intact** inside the next stage, pointing to the stage after it
 - **Adjust "Current stage"** and update Stage N+1's DoD based on what was just done
+- **Sanitize before propagating** — never copy credentials, API keys, tokens, or personal data into the next prompt. Replace with a placeholder (`[API_KEY — in your env]`); the next chat asks the user only if it truly needs the value
+- **Record what failed** — append to the `⛔ FAILED` list every approach this stage tried that didn't work, with the error. A fresh chat with no memory will happily retry a dead end unless the prompt forbids it
+- **Reference files instead of pasting them** when the target environment reads the workspace (Claude Code): pass paths, not contents. Inline content only for chat-only environments (claude.ai, Cowork) where the next session can't open files
+- **Watch the context budget** — if the inherited context grows past roughly a third of the prompt, prune: keep decisions, current state, and failed approaches; cut narration and anything the next chat can re-derive from files
 
 ### CHAIN PAUSED (blocker)
 
@@ -234,11 +239,12 @@ The user pays the chain's price when stable context is incomplete. Include whene
 
 - [ ] Absolute workspace path (not relative)
 - [ ] Target environment (Claude Code / Cowork / Chat) — it changes the available tools
-- [ ] Design system / tokens inline in the prompt (not "see file X")
+- [ ] Design system / tokens inline in the prompt for chat-only environments; file paths are enough when the target environment reads the workspace
 - [ ] Brand voice and tone (if relevant)
 - [ ] Compliance / hard rules (if any)
 - [ ] Conventions (naming, date format, language)
 - [ ] The chain's final goal (not just this stage's)
+- [ ] No secrets — credentials and tokens never travel in the chain
 
 ## Minimal example — 2-stage chain
 

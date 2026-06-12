@@ -3,6 +3,18 @@
 All notable changes to this project are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [2.1.0] — 2026-06-12
+
+### Added
+- **Secret sanitization rule** in the PROPAGATION PROTOCOL: credentials, API keys, and personal data never travel in the chain — placeholders instead.
+- **Failed-approaches ledger**: a `⛔ FAILED` line in the inherited-context template. A fresh chat will happily retry a dead end unless the prompt forbids it.
+- **Reference-over-paste rule**: when the target environment reads the workspace (Claude Code), pass file paths instead of file contents; inline only for chat-only environments.
+- **Context-budget pruning heuristic**: when inherited context grows past ~1/3 of the prompt, keep decisions/state/failures, cut narration.
+- `examples/` — two complete worked chains (research, writing) showing Stage 1, the emitted Stage 2, and `CHAIN COMPLETE`.
+- README: three-way comparison (session-handoff tools · workflow engines · prompt-chain), with a note on Amp Handoff.
+
+All changes applied to both EN and PT-BR skill bodies. Informed by a competitive audit of 10+ neighboring tools (2026-06-12).
+
 ## [2.0.0] — 2026-06-12
 
 ### Changed

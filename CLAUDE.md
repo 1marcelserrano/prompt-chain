@@ -13,6 +13,7 @@ of truth is `skills/prompt-chain/SKILL.md`. Every behavioral change starts there
 | `skills/prompt-chain/SKILL.pt-BR.md` | Portuguese translation. Mirror behavioral changes here after SKILL.md stabilizes. |
 | `skills/prompt-chain/README.md` | Per-skill human-facing summary. |
 | `README.md` (root) | Product front door. Optimize for non-technical readers. Before/After table is the pitch. |
+| `examples/` | Worked chains showing real propagation. Keep each example's Stage 2 consistent with the current STAGE template. |
 | `CONTRIBUTING.md` | How to contribute. |
 
 ## What NOT to edit

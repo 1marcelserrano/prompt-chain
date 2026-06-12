@@ -1,8 +1,8 @@
 ---
 name: prompt-chain
-version: 1.0
+version: 2.1.0
 description: Use this skill whenever the user wants to break a complex multi-step task into a sequence of prompts, each executed in a fresh chat session with full context carried forward. Trigger phrases in PT-BR and EN — "executar por etapas em chats separados", "cada etapa em um novo chat", "prompt autocontido autopropagante", "prompt que gera o próximo", "quero passar esse trabalho para vários chats", "cold start entre chats", "monte um prompt que eu colo em outro chat", "chain of prompts", "self-propagating prompt", "split this across sessions". Also trigger when the user has a long multi-phase task (P0 → P1 → P2), when they mention context limits or fresh sessions, or when they want to isolate execution between phases. Don't wait for exact wording — if the user is trying to distribute sequential work across multiple chat sessions with context preservation, invoke this skill.
-changelog: "V1.0 — release inicial. Skill fundacional de chains autopropagantes com protocolos PROPAGATION / CHAIN PAUSED / CHAIN COMPLETE."
+changelog: "V2.1.0 — sanitização de segredos, ledger de abordagens falhas (⛔ FAILED), regra referência-em-vez-de-cópia, poda por orçamento de contexto. V2.0.0 — corpo EN vira canônico (SKILL.md); esta versão PT-BR preservada. V1.0 — release inicial com protocolos PROPAGATION / CHAIN PAUSED / CHAIN COMPLETE."
 ---
 
 # Prompt Chain
@@ -113,6 +113,7 @@ Ambiente alvo: [Claude Code / Cowork / Chat]
 - ✅ EXISTE: [arquivos criados por stages anteriores]
 - ❌ NÃO EXISTE: [arquivos faltantes]
 - ⚠️ [nuances, warnings, gotchas]
+- ⛔ FAILED: [abordagens já tentadas que não funcionaram, com o erro — não repetir]
 
 ### [Contexto estável: design system / voz / compliance / etc.]
 [Blocos literais, copiados verbatim em todos os stages]
@@ -158,9 +159,13 @@ Seguido por um bloco de código markdown fechado. **Atenção ao escape de fence
 Princípios:
 - **Nunca abrevie com "igual ao anterior"** — o próximo chat não tem o anterior
 - **Copiar contexto estável verbatim é o comportamento correto**, não redundância
-- **Atualize apenas campos dinâmicos**: Decisões já tomadas, Estado atual auditado, TAREFA DESTE STAGE
+- **Atualize apenas campos dinâmicos**: Decisões já tomadas, Estado atual auditado, Abordagens falhas, TAREFA DESTE STAGE
 - **Mantenha o PROPAGATION PROTOCOL intacto** dentro do próximo stage, apontando para o stage seguinte
 - **Ajuste o "Current stage"** e atualize o DoD de Stage N+1 com base no que foi feito agora
+- **Sanitize antes de propagar** — nunca copie credenciais, API keys, tokens ou dados pessoais pro próximo prompt. Substitua por placeholder (`[API_KEY — no seu env]`); o próximo chat pergunta ao usuário só se realmente precisar do valor
+- **Registre o que falhou** — acrescente à lista `⛔ FAILED` toda abordagem que este stage tentou e não funcionou, com o erro. Um chat novo sem memória vai repetir o beco sem saída de bom grado, a menos que o prompt proíba
+- **Referencie arquivos em vez de colá-los** quando o ambiente alvo lê o workspace (Claude Code): passe caminhos, não conteúdo. Conteúdo inline só pra ambientes de chat puro (claude.ai, Cowork) onde a próxima sessão não abre arquivos
+- **Vigie o orçamento de contexto** — se o contexto herdado passar de mais ou menos um terço do prompt, pode: mantenha decisões, estado atual e abordagens falhas; corte narração e tudo que o próximo chat consegue re-derivar dos arquivos
 
 ### CHAIN PAUSED (bloqueio)
 
@@ -234,11 +239,12 @@ O usuário paga o preço da chain se o contexto estável estiver incompleto. Inc
 
 - [ ] Caminho absoluto do workspace (não relativo)
 - [ ] Ambiente alvo (Claude Code / Cowork / Chat) — muda as tools disponíveis
-- [ ] Design system / tokens inline no prompt (não "ver arquivo X")
+- [ ] Design system / tokens inline no prompt em ambientes de chat puro; caminho de arquivo basta quando o ambiente alvo lê o workspace
 - [ ] Voz e tom da marca (se relevante)
 - [ ] Compliance / regras invioláveis (se houver)
 - [ ] Convenções (naming, formato de data, idioma)
 - [ ] Objetivo final da chain (não só deste stage)
+- [ ] Zero segredos — credenciais e tokens nunca viajam na chain
 
 ## Exemplo mínimo — chain de 2 stages
 

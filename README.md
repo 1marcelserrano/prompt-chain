@@ -80,17 +80,23 @@ for it to be split.
 | Auto-detect chainable patterns | Force-chain trivial single-step tasks |
 | Work in any chat-based Claude interface | Require a specific platform |
 
-## vs. session-handoff tools
+## How it compares
 
-Tools like [handoff](https://github.com/thepushkarp/handoff) snapshot a session's state so you can resume it later. Useful, and a different job:
+Two neighboring families solve related problems. Different jobs:
 
-| Session-handoff tools | prompt-chain |
-|---|---|
-| React when a session fills up — save state, resume later. | Plan the whole crossing upfront — N stages, each with its own Definition of Done. |
-| One link at a time. | The full chain is designed before stage 1 runs. |
-| Usually tied to Claude Code (filesystem + hooks). | Any chat interface — state travels inside the prompt text itself. |
+| | Session-handoff tools | Workflow engines | prompt-chain |
+|---|---|---|---|
+| **When it acts** | Reacts when a session fills up — save state, resume later | Runs a coded pipeline you build first | Plans the whole crossing upfront — N stages, each with its own Definition of Done |
+| **Scope** | One link at a time | Full orchestration: retries, validation, branching | The full chain is designed before stage 1 runs |
+| **Where state lives** | Files, hooks, hidden dirs | Databases, APIs, app state | Inside the prompt text itself |
+| **Requires** | Usually Claude Code (plugin + hooks) | Code, a runtime, often a server | A chat window |
+| **Examples** | [handoff](https://github.com/thepushkarp/handoff), [claude-handoff](https://github.com/willseltzer/claude-handoff) | LangGraph, workflow engines | this repo |
 
-Use handoff when a session surprises you. Use prompt-chain when you can see the phases coming.
+Sourcegraph's [Amp Handoff](https://ampcode.com/news/handoff) also generates the next thread's prompt — reactive, one link at a time, inside Amp's paid stack. prompt-chain does the planned, multi-stage version of that idea in plain markdown.
+
+Use handoff when a session surprises you. Use a workflow engine when the orchestration deserves code. Use prompt-chain when you can see the phases coming and want zero infrastructure.
+
+Worked examples: [examples/](./examples/) — full chains showing Stage 1, the emitted Stage 2, and `CHAIN COMPLETE`.
 
 ## FAQ
 

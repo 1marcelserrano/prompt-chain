@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [2.1.1] — 2026-06-12
+
+Repo content only — the skill body is unchanged.
+
+### Added
+- `templates/` — five ready-to-fill Stage 1 seeds: research, refactor, launch, audit, content chains.
+- `benchmark/` — qualitative cold-start benchmark: the same dead task continued under three protocols (no carry · handoff snapshot · prompt-chain Stage 2), with conditions, raw run transcripts, results table, and honest limitations.
+
 ## [2.1.0] — 2026-06-12
 
 ### Added

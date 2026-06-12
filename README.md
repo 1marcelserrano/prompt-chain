@@ -98,6 +98,10 @@ Use handoff when a session surprises you. Use a workflow engine when the orchest
 
 Worked examples: [examples/](./examples/) — full chains showing Stage 1, the emitted Stage 2, and `CHAIN COMPLETE`.
 
+Evidence: [benchmark/](./benchmark/) — the same dead task continued three ways (no carry · handoff snapshot · chain prompt), raw transcripts included.
+
+Ready-to-fill seeds: [templates/](./templates/) — research, refactor, launch, audit, and content chains.
+
 ## FAQ
 
 **Does it send my data anywhere?**

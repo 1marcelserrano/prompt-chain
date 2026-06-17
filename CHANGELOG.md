@@ -3,6 +3,24 @@
 All notable changes to this project are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [2.2.0] — 2026-06-17
+
+Adds a second mode. Until now the skill only did sequential chains and punted everything else to subagents — which miss the cold-start, hand-offable, isolated-chat property when the pieces happen to be independent. FAN-OUT fills that gap.
+
+### Added
+- **FAN-OUT mode** in both skill bodies (EN + PT-BR): independent self-contained prompts, one per piece, sharing stable context with no propagation between them and no `CHAIN COMPLETE`. Includes the canonical FAN-OUT prompt template, an optional dispatcher (one root prompt that emits all N), the CHAIN-vs-FAN-OUT comparison table, and per-piece blocker handling.
+- **CHAIN vs FAN-OUT routing rule** at the top of the skill: one question — *do the pieces depend on each other's output or state?* Yes → CHAIN; No → FAN-OUT. Edge cases covered (mostly-independent-with-one-dependency; same-session parallelism → subagents).
+- `templates/fanout-tasks.md` — a fan-out dispatcher seed (the independent-mode analog of a Stage 1 seed).
+- `examples/fanout-tasks.md` — a worked fan-out: one decision propagated into three unrelated targets, dispatcher → 3 self-contained prompts, one piece pausing without stalling the others.
+- `benchmark/` note on the third axis (independent pieces) the cold-start comparison doesn't cover.
+
+### Changed
+- Skill `description` and README broadened to cover both modes; new trigger phrases (`one prompt per task`, `fan out into independent prompts`, `um prompt por pendência`, `vários prompts independentes`).
+- "When NOT to use" reworded: same-session parallelism → subagents; *isolated* chats without ordering dependency → FAN-OUT (not a reason to avoid the skill).
+- `templates/README.md` and `examples/README.md` indexes now label each entry CHAIN or FAN-OUT.
+
+All changes applied to both EN and PT-BR skill bodies.
+
 ## [2.1.1] — 2026-06-12
 
 Repo content only — the skill body is unchanged.

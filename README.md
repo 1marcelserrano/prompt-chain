@@ -2,19 +2,21 @@
 
 **English** · [Português](./skills/prompt-chain/SKILL.pt-BR.md)
 
-**Break complex multi-step tasks into self-propagating prompts that survive context limits.**
+**Break complex multi-step work into self-contained prompts that survive context limits — chained (sequential) or fanned out (independent).**
 
-The whole skill is one 307-line markdown file. No dependencies, no server, no external state store. Built for anyone running long multi-phase work in Claude — developers and non-developers alike.
+The whole skill is a single markdown file. No dependencies, no server, no external state store. Built for anyone running long multi-phase work in Claude — developers and non-developers alike.
 
 [Install](#install) • [How it works](#how-it-works) • [When to use](#when-to-use) • [FAQ](#faq)
 
 ---
 
-A Claude skill for chaining work across fresh chat sessions. Each prompt
-generates the next, carrying full context forward. Cold-start safe.
-Context-limit immune.
+A Claude skill for distributing work across fresh chat sessions, in two modes: **CHAIN** (each prompt generates the next, carrying full context forward, until done) and **FAN-OUT** (one independent prompt per piece, no ordering, run in any order). Cold-start safe. Context-limit immune.
 
 ## How it works
+
+Two modes, picked by one question — **do the pieces depend on each other's output or state?**
+
+**CHAIN** (yes — order is load-bearing): each prompt runs one stage and emits the next.
 
 ```mermaid
 flowchart LR
@@ -25,9 +27,20 @@ flowchart LR
     B -.blocker.-> P[CHAIN PAUSED<br>asks, never guesses]
 ```
 
+**FAN-OUT** (no — pieces are independent): one dispatcher emits N self-contained prompts; each runs alone, in any order, sharing the same stable context.
+
+```mermaid
+flowchart LR
+    A[You paste<br>DISPATCHER] --> B[emits N prompts<br>same shared context]
+    B --> P1[Piece 1<br>own chat]
+    B --> P2[Piece 2<br>own chat]
+    B --> P3[Piece N<br>own chat]
+    P2 -.blocker.-> Q[asks, never guesses<br>others unaffected]
+```
+
 | Without prompt-chain | With prompt-chain |
 |----------------------|-------------------|
-| One mega-prompt, context fills up, output degrades, you lose state when the chat dies. | A first prompt sets the chain. Each chat finishes its phase and outputs the next self-contained prompt. You paste it into a new chat. State carries. |
+| One mega-prompt, context fills up, output degrades, you lose state when the chat dies. | A first prompt sets the work. Each chat finishes its piece self-contained — emitting the next (chain) or just reporting (fan-out). State carries; nothing collapses mid-session. |
 
 Same work. Half the friction. No mid-session collapse.
 
@@ -57,12 +70,14 @@ Trigger phrases (EN + PT-BR):
 - "prompt that generates the next"
 - "chain of prompts"
 - "cold start between chats"
+- "one prompt per task" / "fan out into independent prompts"
 - "executar por etapas em chats separados"
 - "cada etapa em um novo chat"
 - "prompt autocontido autopropagante"
+- "um prompt por pendência" / "vários prompts independentes"
 
 Natural language works too. Just describe the multi-phase task and ask
-for it to be split.
+for it to be split — sequential pieces become a chain, independent ones a fan-out.
 
 ## Why
 
@@ -75,9 +90,9 @@ for it to be split.
 
 | Does | Doesn't |
 |------|---------|
-| Break P0 → P1 → P2 → ... structure | Execute the phases for you |
+| Break work into a sequential chain (P0 → P1 → P2 …) or a fan-out of independent prompts | Execute the phases for you |
 | Pass context forward via prompt text | Use external state stores |
-| Auto-detect chainable patterns | Force-chain trivial single-step tasks |
+| Route chain vs fan-out by whether pieces depend on each other | Force-chain trivial single-step tasks, or serialize independent work |
 | Work in any chat-based Claude interface | Require a specific platform |
 
 ## How it compares
@@ -86,8 +101,8 @@ Two neighboring families solve related problems. Different jobs:
 
 | | Session-handoff tools | Workflow engines | prompt-chain |
 |---|---|---|---|
-| **When it acts** | Reacts when a session fills up — save state, resume later | Runs a coded pipeline you build first | Plans the whole crossing upfront — N stages, each with its own Definition of Done |
-| **Scope** | One link at a time | Full orchestration: retries, validation, branching | The full chain is designed before stage 1 runs |
+| **When it acts** | Reacts when a session fills up — save state, resume later | Runs a coded pipeline you build first | Plans the whole crossing upfront — N stages (chain) or N independent prompts (fan-out), each with its own Definition of Done |
+| **Scope** | One link at a time | Full orchestration: retries, validation, branching | The full chain or fan-out is designed before the first prompt runs |
 | **Where state lives** | Files, hooks, hidden dirs | Databases, APIs, app state | Inside the prompt text itself |
 | **Requires** | Usually Claude Code (plugin + hooks) | Code, a runtime, often a server | A chat window |
 | **Examples** | [handoff](https://github.com/thepushkarp/handoff), [claude-handoff](https://github.com/willseltzer/claude-handoff) | LangGraph, workflow engines | this repo |
@@ -96,7 +111,7 @@ Sourcegraph's [Amp Handoff](https://ampcode.com/news/handoff) also generates the
 
 Use handoff when a session surprises you. Use a workflow engine when the orchestration deserves code. Use prompt-chain when you can see the phases coming and want zero infrastructure.
 
-Worked examples: [examples/](./examples/) — full chains showing Stage 1, the emitted Stage 2, and `CHAIN COMPLETE`.
+Worked examples: [examples/](./examples/) — full chains (Stage 1, the emitted Stage 2, and `CHAIN COMPLETE`) plus a fan-out (dispatcher → N independent prompts).
 
 Evidence: [benchmark/](./benchmark/) — the same dead task continued three ways (no carry · handoff snapshot · chain prompt), raw transcripts included.
 

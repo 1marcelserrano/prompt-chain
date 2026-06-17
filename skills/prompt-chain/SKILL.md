@@ -1,28 +1,45 @@
 ---
 name: prompt-chain
-version: 2.1.0
-description: Use this skill whenever the user wants to break a complex multi-step task into a sequence of prompts, each executed in a fresh chat session with full context carried forward. Trigger phrases in PT-BR and EN — "executar por etapas em chats separados", "cada etapa em um novo chat", "prompt autocontido autopropagante", "prompt que gera o próximo", "quero passar esse trabalho para vários chats", "cold start entre chats", "monte um prompt que eu colo em outro chat", "chain of prompts", "self-propagating prompt", "split this across sessions". Also trigger when the user has a long multi-phase task (P0 → P1 → P2), when they mention context limits or fresh sessions, or when they want to isolate execution between phases. Don't wait for exact wording — if the user is trying to distribute sequential work across multiple chat sessions with context preservation, invoke this skill.
-changelog: "V2.1.0 — secret sanitization, failed-approaches ledger (⛔ FAILED), reference-over-paste rule, context-budget pruning. V2.0.0 — English as canonical skill body; PT-BR preserved as SKILL.pt-BR.md"
+version: 2.2.0
+description: Use this skill whenever the user wants to break a complex multi-step task into self-contained prompts run in fresh chat sessions with full context carried forward — in two modes. CHAIN (sequential, each prompt self-propagates the next until CHAIN COMPLETE) and FAN-OUT (independent prompts, one per piece, no ordering, run in any order across isolated chats). Trigger phrases in PT-BR and EN — "executar por etapas em chats separados", "cada etapa em um novo chat", "prompt autocontido autopropagante", "prompt que gera o próximo", "quero passar esse trabalho para vários chats", "um prompt por tarefa", "um prompt por pendência", "vários prompts independentes", "prompts em paralelo para chats separados", "cold start entre chats", "monte um prompt que eu colo em outro chat", "chain of prompts", "self-propagating prompt", "fan out into independent prompts", "one prompt per task", "split this across sessions". Also trigger when the user has a long multi-phase task (P0 → P1 → P2), when they mention context limits or fresh sessions, or when they want to isolate execution between phases — whether the pieces are sequential (CHAIN) or independent (FAN-OUT). Don't wait for exact wording — if the user is distributing work across multiple isolated chat sessions with context preservation, invoke this skill.
+changelog: "V2.2.0 — FAN-OUT mode (independent cold-start prompts, no propagation) + CHAIN vs FAN-OUT routing rule. V2.1.0 — secret sanitization, failed-approaches ledger (⛔ FAILED), reference-over-paste rule, context-budget pruning. V2.0.0 — English as canonical skill body; PT-BR preserved as SKILL.pt-BR.md"
 ---
 
 # Prompt Chain
 
-Turns a multi-step task into a chain of self-contained prompts. Each prompt runs one stage in a fresh chat and ends by emitting the next stage's prompt with the accumulated context already inside it. The user only copies and pastes between chats — the chain propagates itself until `CHAIN COMPLETE`.
+Turns a multi-step task into self-contained prompts, each run in a fresh chat with full context carried forward. Two modes:
+
+- **CHAIN** — sequential. Each prompt runs one stage and ends by emitting the next stage's prompt with the accumulated context already inside it. The user copies and pastes between chats; the chain propagates itself until `CHAIN COMPLETE`. Use when the pieces have an ordering dependency.
+- **FAN-OUT** — independent. One self-contained prompt per piece, all sharing the same stable context but with no propagation between them. The user opens each in its own chat, in any order (or at the same time). Use when the pieces don't depend on each other.
+
+## Two modes — how to route
+
+Ask one question: **do the pieces depend on each other's output or state?**
+
+- **Yes → CHAIN.** Stage 2 needs what Stage 1 produced (refactor → validate; outline → draft; research → synthesize). Order is load-bearing, so dynamic state has to travel forward.
+- **No → FAN-OUT.** Each piece is its own closed task that merely shares stable context (propagate one decision into three repos; fix five unrelated audit findings; one prompt per pending item). No order, no shared dynamic state.
+
+Edge cases:
+- **Mostly independent, one dependency** → FAN-OUT for the independent pieces + one short CHAIN for the dependent pair, treated as a single piece of the fan-out. Don't force the whole thing sequential.
+- **Same session, truly parallel, no isolation needed** → not this skill. Use parallel subagents — they run concurrently inside one session. FAN-OUT is for when you specifically want *isolated chats* (cold start, hand-off, different people / models / times) without an ordering dependency.
+
+Everything from here down to "FAN-OUT mode" describes CHAIN. The FAN-OUT section covers only what changes for independent prompts.
 
 ## When to use
 
 - Large task with distinct phases (P0 → P1 → P2), each with its own deliverables
 - User wants to isolate context between stages (new chat = clean memory, cold cache, isolated execution)
-- User explicitly asks for "a prompt that generates the next one" or equivalent
+- User explicitly asks for "a prompt that generates the next one" (CHAIN) or "one prompt per task / per pending item" (FAN-OUT)
 - Work that benefits from pausing between stages to review output before continuing
-- Environments where the same agent can't run the whole chain (session limits, audit policy, model switching)
+- Several independent pieces that share context and each deserve an isolated, hand-offable chat (FAN-OUT)
+- Environments where the same agent can't run the whole thing (session limits, audit policy, model switching)
 
 ## When NOT to use
 
 - Single-step task → solve it directly, no overhead
 - Task whose intermediate state fits in one session with no risk of overflow → TodoWrite + direct execution is better
-- Exploratory work without discrete deliverables → a chain assumes stages with a clear Definition of Done
-- Parallelism (chains are sequential by nature) → use parallel subagents instead
+- Exploratory work without discrete deliverables → both modes assume pieces with a clear Definition of Done
+- Same-session parallelism with no need for isolated chats → use parallel subagents instead (they run concurrently in one session). Wanting *isolated* chats for pieces that have no ordering dependency is not a reason to avoid the skill — that's FAN-OUT mode
 
 ## Mental model
 
@@ -37,6 +54,8 @@ The key insight: **stable context vs dynamic context**.
 - **Dynamic** — current file state, decisions made, blockers found. Updated stage by stage.
 
 If the chain loses stable context, the next chat re-makes decisions. If it loses dynamic context, it redoes work. Either failure destroys the value.
+
+In **FAN-OUT** mode there is no dynamic carry-forward — every prompt is stable context plus one closed task. That makes the stable context the *only* thing keeping the pieces coherent, so completing it well matters even more (see "FAN-OUT mode" below).
 
 ## How to build a chain
 
@@ -302,6 +321,76 @@ Reduce styles.css from 1200 → < 600 lines keeping visual output identical at 3
 - Updated current state (styles.css now has X lines, Y tokens extracted)
 - TASK swapped for responsive validation
 - PROPAGATION PROTOCOL replaced by FINAL TERMINATION (the next emission will be `### CHAIN COMPLETE`)
+
+## FAN-OUT mode
+
+Same isolation and cold-start safety as a chain, minus the propagation. Use it when the pieces share stable context but don't depend on each other's output — see the routing rule up top.
+
+### How to build a fan-out
+
+1. **Extract stable context once** — same as Step 1 for a chain: workspace path, conventions, design system, brand voice, hard constraints, and the shared decision or spec being propagated. This block is copied verbatim into *every* prompt.
+2. **List the independent pieces** — one line each, with its own Definition of Done. If two pieces turn out to share dynamic state, they aren't independent — collapse them into a 2-stage chain and treat that chain as a single piece of the fan-out.
+3. **Write one self-contained prompt per piece** — each carries the full stable context plus that piece's task. No CHAIN META, no PROPAGATION PROTOCOL, no next-prompt emission.
+4. **(Optional) Write a dispatcher** — a single root prompt that holds the stable context once and emits all N piece-prompts in one response. Useful when you want one chat to generate the set and then distribute the pieces.
+
+### Canonical FAN-OUT prompt template
+
+Copy-paste verbatim, adjusting the content. Every piece in the fan-out uses this structure.
+
+````markdown
+# [TASK NAME] — piece K of N (independent)
+# Set: "[FAN-OUT NAME]"
+
+## WORKSPACE
+Absolute path: `[absolute path]`
+Target environment: [Claude Code / Cowork / Chat]
+[Conventions: output folder, naming, language]
+
+## SHARED CONTEXT — REQUIRED READING
+[The stable block, copied verbatim into every piece: the shared decision / spec, design system, voice, hard constraints. Identical across all N prompts.]
+
+## THIS PIECE'S TASK
+1. [concrete action with a "done" criterion]
+2. ...
+
+## CONSTRAINTS
+- [what NOT to do — untouchable files, frozen decisions]
+
+## DELIVERABLES
+1. [file / output]
+2. A short report of what changed + anything left for human decision
+
+## INDEPENDENCE NOTE
+This prompt is self-contained and shares no dynamic state with the other pieces of "[FAN-OUT NAME]". Run it in its own chat, in any order. There is no next prompt to emit — when the task and deliverables are done, stop. If blocked, ask the user directly (see below) rather than guessing.
+````
+
+Note what is *absent* versus a CHAIN stage: no CHAIN META, no "Current state audited" carrying forward, no PROPAGATION PROTOCOL, no `CHAIN COMPLETE`. A fan-out prompt opens, does its closed task, reports, and ends.
+
+### Dispatcher (optional root prompt)
+
+When you want one chat to generate the whole set, use a dispatcher: state the stable context once, list the N pieces, and instruct the agent to emit N self-contained prompts — each following the template above, one fenced block per piece, with no propagation between them. The dispatcher is a generator, not an executor: it produces the prompts; you distribute them. Use a **4-backtick** fence (or `~~~~`) on each emitted block so inner triple backticks don't close it early.
+
+### CHAIN vs FAN-OUT at a glance
+
+| | CHAIN | FAN-OUT |
+|---|---|---|
+| Ordering | Sequential, load-bearing | None — any order, even at once |
+| Between prompts | Each emits the next (propagation) | Nothing — fully independent |
+| Dynamic state | Carried forward stage to stage | None — stable context only |
+| Completion | Last stage emits `CHAIN COMPLETE` | Each prompt just reports; no global terminator |
+| Blocker | `CHAIN PAUSED` (poisons downstream if guessed) | Each prompt pauses alone; the others are unaffected |
+| Build artifact | One seed prompt (Stage 1) | N prompts, or one dispatcher that emits them |
+
+### Blockers in fan-out
+
+Each prompt handles its own blocker in isolation. There is no downstream chain to contaminate, so a blocked piece just pauses and asks while the others proceed untouched. Same rule as a chain: if the AskUserQuestion tool is available, put the blocker as a direct question with 2–4 concrete options; otherwise state it in the deliverables and stop. **Pausing still beats guessing**, and secret sanitization still applies — no credentials, tokens, or personal data in any prompt; use placeholders.
+
+### Signs a fan-out was applied well
+
+- Every piece-prompt pastes cold into its own chat with no manual editing
+- All pieces share *identical* stable context — fill it once, fill it well
+- No piece waits on another, and none references "the previous chat"
+- If you find yourself threading one piece's output into another, it wasn't independent — it should have been a CHAIN
 
 ## Signs the skill was applied well
 

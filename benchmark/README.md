@@ -43,6 +43,7 @@ Runner: Claude Haiku 4.5, one shot per condition, 2026-06-12. The artifact was t
 - n=1 per condition, single model, single task — failure modes shown are real, frequencies are not measured
 - All three artifacts were written by the benchmark author; condition B follows the structure of real handoff tools (status / key decisions / what we tried / next steps) but is not the output of any specific tool
 - The task is small; context-window exhaustion itself is not reproduced here, only the cold-start that follows it
+- This measures **CHAIN** value — carrying state across a cold start when stages depend on each other. It does not test **FAN-OUT**, whose value is a different axis: isolating *independent* pieces into their own chats without serializing unrelated work or letting one blocker stall the rest. A fan-out has no state to carry forward, so this continuation experiment doesn't apply to it
 
 ## Reproduce it
 

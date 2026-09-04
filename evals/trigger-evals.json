@@ -1,0 +1,98 @@
+[
+  {
+    "id": "trigger-chain-pt",
+    "prompt": "Quebre essa migração em etapas dependentes. Cada etapa deve rodar num chat novo e gerar o prompt da próxima.",
+    "should_trigger": true,
+    "rationale": "Explicit sequential cold-start chain."
+  },
+  {
+    "id": "trigger-fanout-pt",
+    "prompt": "Tenho seis pendências independentes. Gere um prompt autocontido para cada uma, para eu abrir em chats separados.",
+    "should_trigger": true,
+    "rationale": "Explicit independent fan-out."
+  },
+  {
+    "id": "trigger-context-limit",
+    "prompt": "Esse trabalho não cabe em uma sessão. Quero continuar em novos chats sem ter que explicar tudo de novo.",
+    "should_trigger": true,
+    "rationale": "Cold-start continuity is the primary need."
+  },
+  {
+    "id": "trigger-handoff-people",
+    "prompt": "Split this investigation into self-contained prompts that different people can run independently.",
+    "should_trigger": true,
+    "rationale": "Independent hand-offs need shared stable context."
+  },
+  {
+    "id": "trigger-sequential-repos",
+    "prompt": "Primeiro audite o repo, depois use o resultado para corrigir e por fim valide. Cada fase vai para uma conversa limpa.",
+    "should_trigger": true,
+    "rationale": "Later stages depend on earlier outputs."
+  },
+  {
+    "id": "trigger-one-prompt-per-task",
+    "prompt": "Give me one prompt per audit finding so I can work through them in isolated sessions.",
+    "should_trigger": true,
+    "rationale": "One independent prompt per task is FAN-OUT."
+  },
+  {
+    "id": "trigger-model-switch",
+    "prompt": "Monte uma cadeia que começa a pesquisa no ChatGPT, passa a implementação ao Claude Code e volta para uma revisão final.",
+    "should_trigger": true,
+    "rationale": "Ordered cross-model hand-off."
+  },
+  {
+    "id": "trigger-hybrid",
+    "prompt": "Três análises são independentes, mas a síntese final depende das três. Prepare os prompts para chats separados.",
+    "should_trigger": true,
+    "rationale": "Hybrid FAN-OUT plus dependent collector."
+  },
+  {
+    "id": "no-trigger-direct-task",
+    "prompt": "Corrija este typo no README.",
+    "should_trigger": false,
+    "rationale": "Single direct task has no hand-off need."
+  },
+  {
+    "id": "no-trigger-same-session-subagents",
+    "prompt": "Use subagentes em paralelo nesta mesma sessão para revisar frontend e backend.",
+    "should_trigger": false,
+    "rationale": "Same-session parallelism belongs to subagents."
+  },
+  {
+    "id": "no-trigger-generic-plan",
+    "prompt": "Faça um plano curto para implementar login.",
+    "should_trigger": false,
+    "rationale": "Planning alone does not imply isolated chat execution."
+  },
+  {
+    "id": "no-trigger-exploration",
+    "prompt": "Explore comigo possibilidades para o nome do produto.",
+    "should_trigger": false,
+    "rationale": "Open-ended exploration has no discrete hand-off."
+  },
+  {
+    "id": "no-trigger-checklist",
+    "prompt": "Create a checklist for reviewing a pull request.",
+    "should_trigger": false,
+    "rationale": "A checklist is not a multi-chat workflow."
+  },
+  {
+    "id": "no-trigger-long-single-output",
+    "prompt": "Escreva um relatório detalhado de 4.000 palavras nesta conversa.",
+    "should_trigger": false,
+    "rationale": "Length alone does not require session isolation."
+  },
+  {
+    "id": "no-trigger-reminder",
+    "prompt": "Me lembre amanhã de revisar a proposta.",
+    "should_trigger": false,
+    "rationale": "Scheduling is a different capability."
+  },
+  {
+    "id": "no-trigger-agent-workflow",
+    "prompt": "Build an autonomous agent that retries failed jobs and stores shared state.",
+    "should_trigger": false,
+    "rationale": "A stateful workflow engine is beyond this skill."
+  }
+]

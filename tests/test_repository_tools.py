@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import shutil
 import sys
 import tempfile
 import unittest
@@ -12,6 +14,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from build_skill import build_archive  # noqa: E402
+from render_mirrors import render_mirrors  # noqa: E402
 from validate_repo import (  # noqa: E402
     validate_behavior_evals,
     validate_markdown_links,
@@ -22,6 +25,85 @@ from validate_repo import (  # noqa: E402
 
 
 class RepositoryToolTests(unittest.TestCase):
+    def test_mirror_render_is_deterministic_and_preserves_behavior(self) -> None:
+        source_path = REPO_ROOT / "skills" / "prompt-chain" / "SKILL.md"
+        source = source_path.read_bytes()
+
+        def files_under(root: Path) -> dict[str, bytes]:
+            return {
+                path.relative_to(root).as_posix(): path.read_bytes()
+                for path in sorted(root.rglob("*"))
+                if path.is_file()
+            }
+
+        with tempfile.TemporaryDirectory() as first_temp, \
+                tempfile.TemporaryDirectory() as second_temp:
+            first = Path(first_temp) / "render"
+            second = Path(second_temp) / "render"
+            first_targets = render_mirrors(REPO_ROOT, first)
+            second_targets = render_mirrors(REPO_ROOT, second)
+            self.assertEqual(files_under(first), files_under(second))
+
+            private_skill = (first_targets["mscs-skills"] / "SKILL.md").read_bytes()
+            self.assertEqual(private_skill, source)
+
+            invite_skill = (first_targets["ms-skills"] / "SKILL.md").read_text(
+                encoding="utf-8"
+            )
+            source_text = source.decode("utf-8")
+
+            private_manifest = json.loads(
+                (first_targets["mscs-skills"] / "MIRROR.json").read_text(encoding="utf-8")
+            )
+            version = private_manifest["source"]["version"]
+            self.assertIn(f'version: "{version}"\n', invite_skill.split("---", 2)[1])
+            self.assertEqual(
+                invite_skill.split("---", 2)[2],
+                source_text.split("---", 2)[2],
+            )
+            self.assertEqual(private_manifest["target"]["profile"], "portable-exact")
+
+            for target in first_targets.values():
+                target_manifest = json.loads(
+                    (target / "MIRROR.json").read_text(encoding="utf-8")
+                )
+                self.assertEqual(
+                    target_manifest["source"]["sha256"],
+                    hashlib.sha256(source).hexdigest(),
+                )
+                for relative, expected in target_manifest["files"].items():
+                    self.assertEqual(
+                        hashlib.sha256((target / relative).read_bytes()).hexdigest(),
+                        expected,
+                    )
+
+    def test_mirror_render_refuses_a_nonempty_output_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "render"
+            output.mkdir()
+            (output / "unrelated.txt").write_text("preserve me", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "must be empty"):
+                render_mirrors(REPO_ROOT, output)
+
+    def test_mirror_render_uses_the_same_source_filter_as_packaging(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "skills" / "prompt-chain"
+            shutil.copytree(REPO_ROOT / "skills" / "prompt-chain", source)
+            (source / ".DS_Store").write_bytes(b"junk")
+            cache = source / "__pycache__"
+            cache.mkdir()
+            (cache / "generated.pyc").write_bytes(b"junk")
+
+            targets = render_mirrors(root, root / "render")
+            mirrored = {
+                path.relative_to(targets["ms-skills"]).as_posix()
+                for path in targets["ms-skills"].rglob("*")
+                if path.is_file()
+            }
+            self.assertNotIn(".DS_Store", mirrored)
+            self.assertNotIn("__pycache__/generated.pyc", mirrored)
+
     def test_build_is_deterministic_and_contains_only_source_files(self) -> None:
         source = REPO_ROOT / "skills" / "prompt-chain"
         with tempfile.TemporaryDirectory() as temporary:

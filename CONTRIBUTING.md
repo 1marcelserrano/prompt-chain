@@ -8,6 +8,10 @@ Single source of truth: `skills/prompt-chain/SKILL.md`. All behavior
 changes go there first. The root `README.md` is the product front door
 and updates after the skill body stabilizes.
 
+The copies in `mscs-skills` and `ms-skills` are generated distribution
+mirrors. Follow [MIRRORS.md](./MIRRORS.md) after the canonical source and
+tests are stable; never make an independent behavioral edit in a mirror.
+
 ## How to test locally
 
 1. Clone the repo and install development requirements: `python3 -m pip install -r requirements-dev.txt`.

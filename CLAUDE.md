@@ -10,7 +10,7 @@ of truth is `skills/prompt-chain/SKILL.md`. Every behavioral change starts there
 | File | What it controls |
 |------|------------------|
 | `skills/prompt-chain/SKILL.md` | Skill behavior — triggers, workflow, output format. The body the agent loads. English, canonical. |
-| `skills/prompt-chain/SKILL.pt-BR.md` | Portuguese translation. Mirror behavioral changes here after SKILL.md stabilizes. |
+| `skills/prompt-chain/SKILL.pt-BR.md` | Portuguese reference translation. Mirror behavioral changes here after SKILL.md stabilizes. |
 | `skills/prompt-chain/README.md` | Per-skill human-facing summary. |
 | `README.md` (root) | Product front door. Optimize for non-technical readers. Before/After table is the pitch. |
 | `examples/` | Worked chains showing real propagation. Keep each example's Stage 2 consistent with the current STAGE template. |
@@ -18,9 +18,9 @@ of truth is `skills/prompt-chain/SKILL.md`. Every behavioral change starts there
 
 ## What NOT to edit
 
-Nothing is auto-generated in this repo. Every file is hand-maintained.
-Keep the SKILL.md frontmatter (`name`, `description`) intact — `npx skills`
-and the Claude plugin loader both parse it.
+`prompt-chain.skill` is generated from `skills/prompt-chain/`; never edit the package directly. Source, translation, docs, templates, and examples are hand-maintained. Build with `python3 scripts/build_skill.py` and validate with `python3 scripts/validate_repo.py`.
+
+Keep SKILL.md frontmatter portable. The repository validator enforces the Agent Skills keys, the 1024-character description limit, and EN/PT-BR version parity.
 
 ## Voice
 

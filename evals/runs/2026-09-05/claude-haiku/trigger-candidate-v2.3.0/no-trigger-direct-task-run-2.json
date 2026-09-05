@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-direct-task",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 12.933,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "User is requesting a single direct task (fix a typo in README), which is explicitly excluded from prompt-chain use. This does not involve multi-stage workflows, cold-start handoffs, or work spanning isolated chat sessions."
+}

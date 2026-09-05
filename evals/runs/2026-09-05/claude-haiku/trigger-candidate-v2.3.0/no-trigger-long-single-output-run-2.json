@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-long-single-output",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 15.051,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is requesting a single, direct task: write a 4,000-word report in the current conversation. The prompt-chain skill is for work that spans isolated chat sessions with cold-start handoffs or multi-stage prompts. The exclusion explicitly states \"Do not use for a single direct task\" or \"same-session\" work. This request does not involve moving context across separate chats or generating prompts for future sessions."
+}

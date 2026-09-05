@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-context-limit",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 13.466,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user's request in Portuguese (\"Esse trabalho não cabe em uma sessão. Quero continuar em novos chats sem ter que explicar tudo de novo\") directly matches the prompt-chain skill's purpose: building self-contained prompts for work across isolated chat sessions without losing context. The request explicitly mentions continuing in new chats (\"novos chats\") and avoiding re-explanation, which are core triggers for this skill including \"executar por etapas em chats separados\"."
+}

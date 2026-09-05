@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-hybrid",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 11.727,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user requests prompts for three independent analyses in separate chats with a final synthesis that depends on all three outputs. This is a FAN-OUT pattern: independent pieces (three analyses) each need their own prompt, followed by a collector (synthesis). The user explicitly requests \"prompts for separate chats\" with interdependent stages, which matches the prompt-chain skill's stated use case exactly."
+}

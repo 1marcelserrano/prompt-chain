@@ -69,6 +69,63 @@ class RepositoryToolTests(unittest.TestCase):
             self.assertTrue(any("unexpected frontmatter keys" in error for error in errors))
             self.assertTrue(any("maximum is 1024" in error for error in errors))
 
+    def test_frontmatter_enforces_semver(self) -> None:
+        def errors_for(version: str) -> list[str]:
+            with tempfile.TemporaryDirectory() as temporary:
+                skill = Path(temporary) / "SKILL.md"
+                skill.write_text(
+                    "---\n"
+                    "name: prompt-chain\n"
+                    "description: Test skill.\n"
+                    "license: MIT\n"
+                    "metadata:\n"
+                    f'  version: "{version}"\n'
+                    "  compatibility: Test client.\n"
+                    "---\n",
+                    encoding="utf-8",
+                )
+                errors, _ = validate_skill_file(skill)
+                return errors
+
+        for valid in ("0.0.0", "2.3.0-rc.1", "2.3.0+build.7", "2.3.0-rc.1+build.7"):
+            self.assertEqual(errors_for(valid), [], valid)
+        for invalid in ("01.2.3", "1.02.3", "1.2.03", "1.2.3-01", "1.2.3-..", "1.2"):
+            self.assertTrue(any("semver" in error for error in errors_for(invalid)), invalid)
+
+    def test_frontmatter_accepts_standard_optional_compatibility(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            skill = Path(temporary) / "SKILL.md"
+            skill.write_text(
+                "---\n"
+                "name: prompt-chain\n"
+                "description: Test skill.\n"
+                "license: MIT\n"
+                "compatibility: Requires a chat client.\n"
+                "metadata:\n"
+                '  version: "2.3.0"\n'
+                "---\n",
+                encoding="utf-8",
+            )
+            errors, _ = validate_skill_file(skill)
+            self.assertEqual(errors, [])
+
+    def test_frontmatter_accepts_crlf_line_endings(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            skill = Path(temporary) / "SKILL.md"
+            skill.write_bytes(
+                (
+                    "---\r\n"
+                    "name: prompt-chain\r\n"
+                    "description: Test skill.\r\n"
+                    "license: MIT\r\n"
+                    "metadata:\r\n"
+                    '  version: "2.3.0"\r\n'
+                    "---\r\n"
+                ).encode("utf-8")
+            )
+            errors, _ = validate_skill_file(skill)
+            self.assertEqual(errors, [])
+
     def test_trigger_eval_fixture_is_balanced_and_valid(self) -> None:
         path = REPO_ROOT / "evals" / "trigger-evals.json"
         self.assertEqual(validate_trigger_evals(path), [])
@@ -79,6 +136,66 @@ class RepositoryToolTests(unittest.TestCase):
     def test_behavior_eval_fixture_is_valid(self) -> None:
         path = REPO_ROOT / "evals" / "behavior-evals.json"
         self.assertEqual(validate_behavior_evals(path), [])
+
+    def test_v230_skill_metadata_is_portable_and_in_sync(self) -> None:
+        skill_dir = REPO_ROOT / "skills" / "prompt-chain"
+        english_errors, english = validate_skill_file(skill_dir / "SKILL.md")
+        portuguese_errors, portuguese = validate_skill_file(skill_dir / "SKILL.pt-BR.md")
+        self.assertEqual(english_errors, [])
+        self.assertEqual(portuguese_errors, [])
+        self.assertEqual(english["metadata"]["version"], "2.3.0")
+        self.assertEqual(english["metadata"]["version"], portuguese["metadata"]["version"])
+        self.assertNotIn("compatibility", english)
+        self.assertNotIn("compatibility", portuguese)
+        self.assertLessEqual(len(english["description"]), 1024)
+        self.assertLessEqual(len(portuguese["description"]), 1024)
+
+    def test_chain_contract_carries_frame_authority_and_coordinator_return(self) -> None:
+        english = (REPO_ROOT / "skills" / "prompt-chain" / "SKILL.md").read_text(encoding="utf-8")
+        portuguese = (REPO_ROOT / "skills" / "prompt-chain" / "SKILL.pt-BR.md").read_text(encoding="utf-8")
+        for required in (
+            "## WORK FRAME — COPY VERBATIM",
+            "## AUTHORITY — COPY VERBATIM",
+            "### Operator decisions — frozen",
+            "### Observed facts",
+            "### Stage proposals — not binding until ratified",
+            "### STAGE REPORT TO COORDINATOR",
+            "### AUTHORIZATION PROTOCOL",
+        ):
+            self.assertIn(required, english)
+        for required in (
+            "## WORK FRAME — COPIAR VERBATIM",
+            "## AUTORIDADE — COPIAR VERBATIM",
+            "### Decisões do operador — congeladas",
+            "### Fatos observados",
+            "### Propostas do stage — não vinculantes até ratificação",
+            "### RELATÓRIO DO STAGE AO COORDENADOR",
+            "### PROTOCOLO DE AUTORIZAÇÃO",
+        ):
+            self.assertIn(required, portuguese)
+
+    def test_templates_enforce_v230_contract(self) -> None:
+        for template in sorted((REPO_ROOT / "templates").glob("*-chain.md")):
+            text = template.read_text(encoding="utf-8")
+            self.assertIn("## WORK FRAME — COPY VERBATIM", text, template.name)
+            self.assertIn("## AUTHORITY — COPY VERBATIM", text, template.name)
+            self.assertIn("### Operator decisions — frozen", text, template.name)
+            self.assertIn("### STAGE REPORT TO COORDINATOR", text, template.name)
+            self.assertIn("when paused, `### CHAIN PAUSED` instead", text, template.name)
+        fanout = (REPO_ROOT / "templates" / "fanout-tasks.md").read_text(encoding="utf-8")
+        self.assertIn("## RESULT FOR COORDINATOR — REQUIRED", fanout)
+        self.assertIn("Operator decisions recorded in this piece", fanout)
+        self.assertIn("### Shared proposals — not binding until ratified", fanout)
+        english_skill = (REPO_ROOT / "skills" / "prompt-chain" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Operator decisions recorded in this piece", english_skill)
+        self.assertIn("### Shared proposals — not binding until ratified", english_skill)
+        self.assertIn("Required piece 2 result", english_skill)
+        self.assertIn("AUTHORITY / SHARED CONTEXT", english_skill)
+        self.assertIn("A paused response uses `### CHAIN PAUSED` instead", english_skill)
+        self.assertIn("## COLLECTOR TEMPLATE", fanout)
+        self.assertIn("### SET COMPLETE", fanout)
+        launch = (REPO_ROOT / "templates" / "launch-chain.md").read_text(encoding="utf-8")
+        self.assertIn("Requires fresh approval: publish, send, push, deploy, or open a PR", launch)
 
     def test_link_validation_ignores_raw_runs_but_checks_maintained_docs(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

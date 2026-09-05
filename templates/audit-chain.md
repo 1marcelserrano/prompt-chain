@@ -17,19 +17,51 @@ Fill every `[FILL]`, paste into a fresh chat:
 - Stage 2: verify — confirm or kill each finding against evidence
 - Stage 3: report — severity-ranked report + ordered fix list
 
+## WORK FRAME — COPY VERBATIM
+
+### Original ask
+> [FILL: the operator's exact words]
+
+### Done
+[FILL: one verifiable statement]
+
+### Work class and risk
+[FILL: production / personal-pre-production / one-shot; risk; what a revert cannot undo]
+
+### Budget / checkpoint
+Three stages. Return to [FILL: coordinator] after each stage.
+
+### Undo
+[FILL: how to reverse any authorized changes; "not applicable — read-only" when true]
+
+### Coordinator
+[FILL: chat, person, or role]
+
 ## WORKSPACE
 Absolute path: `[FILL: absolute path]`
 Target environment: [FILL: Claude Code / Cowork]
+Destination / audience: [FILL]
+
+## AUTHORITY — COPY VERBATIM
+- Authorized in this chain: [FILL: exact actions]
+- Requires fresh approval: [FILL: external effects not already authorized]
+- Out of scope: [FILL: actions and surfaces]
 
 ## INHERITED CONTEXT — REQUIRED READING
 
 ### Chain goal
 [FILL: one verifiable sentence — e.g. "A severity-ranked audit of X against checklist Y, every finding verified, with an ordered fix list."]
 
-### Decisions already made
+### Operator decisions — frozen
 - Checklist / standard to audit against: [FILL: name it or inline it]
 - [FILL: scope — folders/areas in, folders/areas out]
 - Read-only zones: [FILL: what must never be modified]
+
+### Observed facts
+- None yet — Stage 1 collects them
+
+### Stage proposals — not binding until ratified
+- None yet
 
 ### Stable context (copy verbatim into every stage)
 - Severity scale: [FILL: e.g. CRITICAL / HIGH / LOW, with one-line definitions]
@@ -51,8 +83,9 @@ Target environment: [FILL: Claude Code / Cowork]
 
 ## DELIVERABLES
 1. Raw findings table
-2. A `### NEXT PROMPT — STAGE 2` block
+2. A `### STAGE REPORT TO COORDINATOR` block
+3. When status is complete, a `### NEXT PROMPT — STAGE 2` block; when paused, `### CHAIN PAUSED` instead
 
 ## PROPAGATION PROTOCOL — CRITICAL
-At the end of your response, emit a markdown code block containing the complete, self-contained prompt for Stage 2. The next chat has ZERO memory of this one. The Stage 2 prompt must: open with `# STAGE 2/3 — VERIFY`; copy CHAIN META, WORKSPACE, and all stable INHERITED CONTEXT verbatim; carry the full raw findings table; update "Current state audited" and `⛔ FAILED` (areas that couldn't be swept and why); set the task to adversarial verification — for each finding, try to refute it before confirming; include this same protocol pointing to Stage 3 (Stage 3 replaces it with FINAL TERMINATION and ends with `### CHAIN COMPLETE`). Never copy secrets or client-identifying data into the next prompt. If the checklist is ambiguous on a load-bearing item, emit `### CHAIN PAUSED` with the question instead of interpreting.
+Return a `STAGE REPORT TO COORDINATOR`. When its status is complete, emit the complete prompt for Stage 2; when paused, emit `CHAIN PAUSED` and no Stage 2 prompt. The next chat has ZERO memory of this one. The Stage 2 prompt must: open with `# STAGE 2/3 — VERIFY`; copy CHAIN META, WORK FRAME, WORKSPACE, AUTHORITY, and stable INHERITED CONTEXT verbatim; carry the raw findings as observed facts, never operator decisions; update "Current state audited" and `⛔ FAILED`; set the task to adversarial verification; include this protocol for Stage 3. Do not execute Stage 2 here. Never widen authorization or copy secrets or client-identifying data.
 ````

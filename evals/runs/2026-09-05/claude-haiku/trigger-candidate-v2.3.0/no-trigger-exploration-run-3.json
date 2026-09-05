@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-exploration",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 11.59,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is requesting open-ended exploration of product name possibilities in a single session. The prompt-chain skill is designed for multi-stage work that must move across isolated chat sessions with cold-start handoffs. The skill explicitly excludes \"a single direct task, open-ended exploration, or same-session parallel subagents.\" This request matches the exclusion criteria."
+}

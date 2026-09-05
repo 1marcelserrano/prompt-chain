@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-chain-pt",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 17.643,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user requests breaking a migration into dependent stages where each stage runs in a new chat and generates the prompt for the next stage. This directly matches the prompt-chain skill's CHAIN use case: dependent stages, cold-start handoffs across isolated sessions, and sequential prompt generation. The Portuguese phrasing \"cada etapa deve rodar num chat novo e gerar o prompt da próxima\" confirms the multi-session, dependent-stage workflow the skill is designed for."
+}

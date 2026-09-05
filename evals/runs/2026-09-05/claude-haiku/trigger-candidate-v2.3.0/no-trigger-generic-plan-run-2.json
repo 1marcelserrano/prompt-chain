@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-generic-plan",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 15.529,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "User is requesting a single plan for implementing login in the current session. This is a direct task, not work that requires multiple isolated chat sessions or cold-start handoffs. The prompt-chain skill is for building self-contained prompts across sessions and explicitly excludes single direct tasks. The user wants a plan now, not prompts to move to other chats."
+}

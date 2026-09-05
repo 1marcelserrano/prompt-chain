@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-one-prompt-per-task",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.776,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user explicitly requests \"one prompt per audit finding\" to \"work through them in isolated sessions.\" This matches the prompt-chain skill's core use case: generating independent prompts for isolated chat sessions (FAN-OUT pattern). The request aligns directly with stated triggers like \"one prompt per task\" and is not a single direct task or same-session exploration."
+}

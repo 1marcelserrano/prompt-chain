@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-exploration",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 13.185,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is requesting a collaborative brainstorming session (\"Explore comigo\" = \"Explore with me\") about product name possibilities within the current conversation. This is a single, open-ended exploration task in the same session. The prompt-chain skill is designed for multi-stage workflows that must move across isolated chat sessions with cold-start handoffs, not for same-session collaborative ideation. The request does not match the skill's stated use cases."
+}

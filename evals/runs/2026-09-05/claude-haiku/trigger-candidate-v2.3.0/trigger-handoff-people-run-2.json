@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-handoff-people",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 9.511,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user request \"Split this investigation into self-contained prompts that different people can run independently\" directly matches the prompt-chain skill's FAN-OUT pattern. The skill is designed for exactly this use case: creating independent, self-contained prompts that can be executed in separate chat sessions by different people. The request explicitly asks for prompts that people can \"run independently,\" which is the core function of the skill."
+}

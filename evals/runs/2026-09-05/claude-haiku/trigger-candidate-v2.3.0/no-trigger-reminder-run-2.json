@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-reminder",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 23.44,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user's request \"Me lembre amanhã de revisar a proposta\" (Remind me tomorrow to review the proposal) is a single direct task—setting a reminder. The prompt-chain skill explicitly excludes single direct tasks. It applies only to multi-stage work requiring isolated chat sessions with cold-start handoffs, none of which are present here."
+}

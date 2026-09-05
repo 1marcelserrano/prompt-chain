@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-model-switch",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 11.398,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user is requesting a multi-stage workflow across isolated chat sessions: research in ChatGPT → implementation in Claude Code → final review. This is a sequential chain where each stage depends on the previous stage's output and requires cold-start prompts for handoffs between different tools. This directly matches the prompt-chain skill's stated use case for CHAIN workflows."
+}

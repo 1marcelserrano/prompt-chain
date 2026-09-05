@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-context-limit",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.059,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user is requesting work across multiple isolated chat sessions while maintaining context across cold starts. They explicitly need to avoid re-explaining context in each new chat. This directly matches the prompt-chain skill's stated use case for CHAIN workflows where each stage depends on the previous output and must emit the next cold-start prompt. The request excludes single-task and same-session scenarios, both confirmed by the user's need for separate sessions."
+}

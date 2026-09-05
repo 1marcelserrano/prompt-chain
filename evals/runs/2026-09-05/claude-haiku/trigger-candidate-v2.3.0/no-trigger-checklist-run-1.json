@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-checklist",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 14.302,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is requesting a single direct task: creating a PR review checklist. The prompt-chain skill is designed for multi-stage work that moves across isolated chat sessions with cold-start handoffs. This request does not involve cross-session work, stage dependencies, or prompt generation for other chats. It's a straightforward, single-task request that should be handled directly."
+}

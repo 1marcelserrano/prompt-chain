@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-agent-workflow",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 20.745,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "User request is a single direct implementation task ('Build an autonomous agent'), not a multi-stage workflow that requires separate chat sessions or cold-start handoffs. The prompt-chain skill applies to creating inter-session prompts with phrases like 'run each stage in a new chat' or 'cold-start handoff', explicitly excluding 'a single direct task'. This is a straightforward build request for one session."
+}

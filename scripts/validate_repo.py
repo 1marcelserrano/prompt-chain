@@ -13,7 +13,10 @@ from urllib.parse import unquote
 
 import yaml
 
-from build_skill import build_archive, source_files
+try:
+    from .build_skill import build_archive, source_files
+except ImportError:  # Direct script execution.
+    from build_skill import build_archive, source_files
 
 
 ALLOWED_FRONTMATTER = {
@@ -24,7 +27,12 @@ ALLOWED_FRONTMATTER = {
     "metadata",
     "allowed-tools",
 }
-SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$")
+SEMVER = re.compile(
+    r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
+    r"(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)"
+    r"(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?"
+    r"(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
+)
 MARKDOWN_LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 
 
@@ -65,9 +73,14 @@ def validate_skill_file(path: Path) -> tuple[list[str], dict | None]:
     if data.get("license") != "MIT":
         errors.append(f"{path}: license must be MIT")
     compatibility = data.get("compatibility")
-    if not isinstance(compatibility, str) or not compatibility.strip():
-        errors.append(f"{path}: compatibility must describe the supported environment")
-
+    if compatibility is not None and (
+        not isinstance(compatibility, str)
+        or not compatibility.strip()
+        or len(compatibility) > 500
+    ):
+        errors.append(
+            f"{path}: compatibility must be a non-empty string of at most 500 characters"
+        )
     metadata = data.get("metadata")
     if not isinstance(metadata, dict):
         errors.append(f"{path}: metadata must be a mapping")

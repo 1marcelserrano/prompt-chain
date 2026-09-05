@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-agent-workflow",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 17.221,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is requesting a direct implementation task: \"Build an autonomous agent that retries failed jobs and stores shared state.\" This is a single, self-contained task to be built in the current session. The prompt-chain skill is designed for multi-stage work that must move across isolated chat sessions with cold-start handoffs or independent tasks that each need their own prompt. The user has not requested prompts for sequential stages, work spanning multiple sessions, or one-prompt-per-task distribution. The skill explicitly excludes single direct tasks."
+}

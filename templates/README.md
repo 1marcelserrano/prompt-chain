@@ -1,6 +1,6 @@
 # Domain templates
 
-Six ready-to-fill seed prompts. Five are **CHAIN** seeds (sequential Stage 1 prompts that self-propagate); one is a **FAN-OUT** dispatcher (emits N independent prompts at once). Replace every `[FILL]` and paste into a fresh chat.
+Six ready-to-fill seed prompts. Five are **CHAIN** seeds (sequential Stage 1 prompts that self-propagate); one is a **FAN-OUT** dispatcher (emits N independent prompts and, when needed, a collector). Replace every `[FILL]` and paste into a fresh chat.
 
 | Template | Mode | Stages / pieces | For |
 |---|---|---|---|
@@ -16,7 +16,10 @@ Pick the mode with one question: **do the pieces depend on each other's output o
 Rules that apply to every template:
 
 - The stable context block (`Stable context` / `SHARED CONTEXT`) is copied verbatim into every stage or piece — fill it once, fill it well
+- The work frame and authority block travel verbatim; permissions never widen downstream
+- Operator decisions, observed facts, and stage proposals remain separate
 - No secrets: credentials and tokens never travel in prompt text — use placeholders
-- If a stage/piece gets blocked, it asks (`CHAIN PAUSED` for chains; a direct question for fan-out pieces) — it never guesses
+- Every stage or piece returns to the named coordinator before dependent work advances
+- If a stage/piece gets blocked, it asks (`CHAIN PAUSED` for chains; a result envelope with one question for fan-out pieces) — it never guesses
 
 Want a domain that isn't here? PRs welcome — copy the closest template and adapt the stage breakdown.

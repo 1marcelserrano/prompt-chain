@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-fanout-pt",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 13.971,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "User request matches prompt-chain skill FAN-OUT pattern: \"six independent tasks\" + \"one prompt for each\" + \"separate chats\". Trigger includes \"um prompt por pendência\" (one prompt per task). The skill is designed for exactly this scenario."
+}

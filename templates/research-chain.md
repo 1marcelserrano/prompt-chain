@@ -17,18 +17,50 @@ Fill every `[FILL]`, paste into a fresh chat:
 - Stage 2: deep dive — verify claims, analyze the top findings
 - Stage 3: synthesis — verdict, comparisons, final report
 
+## WORK FRAME — COPY VERBATIM
+
+### Original ask
+> [FILL: the operator's exact words]
+
+### Done
+[FILL: one verifiable statement]
+
+### Work class and risk
+[FILL: production / personal-pre-production / one-shot; risk; what a revert cannot undo]
+
+### Budget / checkpoint
+Three stages. Return to [FILL: coordinator] after each stage.
+
+### Undo
+[FILL: how to retract or revise the report if evidence changes]
+
+### Coordinator
+[FILL: chat, person, or role]
+
 ## WORKSPACE
 Absolute path: [FILL: path, or "none (chat-only)"]
 Target environment: [FILL: Claude Code / Cowork / claude.ai chat with web search]
+Destination / audience: [FILL]
+
+## AUTHORITY — COPY VERBATIM
+- Authorized in this chain: [FILL: research and local report creation]
+- Requires fresh approval: [FILL: publication, outreach, purchase, or other external effects]
+- Out of scope: [FILL: markets, sources, or actions]
 
 ## INHERITED CONTEXT — REQUIRED READING
 
 ### Chain goal
 [FILL: one verifiable sentence — e.g. "A report answering X, with every factual claim linked to a source."]
 
-### Decisions already made
+### Operator decisions — frozen
 - [FILL: scope boundaries — what counts, what doesn't]
 - Adoption/market numbers must be verified, never estimated — write "not verifiable" when a metric can't be confirmed
+
+### Observed facts
+- None yet — Stage 1 collects them
+
+### Stage proposals — not binding until ratified
+- None yet
 
 ### Stable context (copy verbatim into every stage)
 - Output language: [FILL]
@@ -49,8 +81,9 @@ Target environment: [FILL: Claude Code / Cowork / claude.ai chat with web search
 
 ## DELIVERABLES
 1. Fact-sheet table
-2. A `### NEXT PROMPT — STAGE 2` block
+2. A `### STAGE REPORT TO COORDINATOR` block
+3. When status is complete, a `### NEXT PROMPT — STAGE 2` block; when paused, `### CHAIN PAUSED` instead
 
 ## PROPAGATION PROTOCOL — CRITICAL
-At the end of your response, emit a markdown code block containing the complete, self-contained prompt for Stage 2. The next chat has ZERO memory of this one. The Stage 2 prompt must: open with `# STAGE 2/3 — DEEP DIVE`; copy CHAIN META, WORKSPACE, and all stable INHERITED CONTEXT verbatim; include the full fact-sheet table (the next chat cannot see this one); update "Decisions already made", "Current state audited", and `⛔ FAILED` (record any search path that came up dry, so it isn't retried); set the task to verifying and analyzing the flagged findings; include this same protocol pointing to Stage 3 (Stage 3 replaces it with FINAL TERMINATION and ends with `### CHAIN COMPLETE`). Never copy credentials or personal data into the next prompt. If blocked, emit `### CHAIN PAUSED` with a direct question instead.
+Return a `STAGE REPORT TO COORDINATOR`. When its status is complete, emit the complete prompt for Stage 2; when paused, emit `CHAIN PAUSED` and no Stage 2 prompt. The next chat has ZERO memory of this one. The Stage 2 prompt must: open with `# STAGE 2/3 — DEEP DIVE`; copy CHAIN META, WORK FRAME, WORKSPACE, AUTHORITY, and stable INHERITED CONTEXT verbatim; include the fact-sheet table as observed facts and flagged candidates as stage proposals, never operator decisions; update "Current state audited" and `⛔ FAILED`; set the task to verification and analysis and include this protocol for Stage 3. Do not execute Stage 2 here or publish/contact sources without exact authorization. Never copy credentials or unnecessary personal data.
 ````

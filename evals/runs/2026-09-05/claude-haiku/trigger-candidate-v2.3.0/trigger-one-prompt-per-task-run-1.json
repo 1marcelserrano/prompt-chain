@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-one-prompt-per-task",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.809,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user request matches the prompt-chain skill's FAN-OUT pattern: \"one prompt per audit finding\" + \"isolated sessions\" indicates independent work items that each need a cold-start prompt for separate chat contexts. This is exactly what the skill is designed for."
+}

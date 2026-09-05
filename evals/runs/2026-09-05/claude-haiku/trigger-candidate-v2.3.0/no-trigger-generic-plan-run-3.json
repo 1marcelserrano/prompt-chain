@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-generic-plan",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 17.206,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "User is requesting a simple plan for login implementation within this session. This is a single direct task and does not match the prompt-chain skill's use case of building self-contained prompts for work that moves across isolated chat sessions. The skill explicitly excludes single direct tasks."
+}

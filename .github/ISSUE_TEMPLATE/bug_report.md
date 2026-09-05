@@ -23,5 +23,12 @@ Want:    [desired output]
 - [ ] Cursor
 - [ ] Other: ___
 
+**Mode and loading evidence**
+- [ ] CHAIN
+- [ ] FAN-OUT
+- [ ] Unsure which mode should apply
+
+<!-- How did you confirm prompt-chain was actually loaded or invoked? -->
+
 **Skill version / commit**
 <!-- git log -1 --oneline of your local copy -->

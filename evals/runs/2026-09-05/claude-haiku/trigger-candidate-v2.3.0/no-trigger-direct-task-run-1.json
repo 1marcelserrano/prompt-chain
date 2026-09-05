@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-direct-task",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.616,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "This is a single, direct task (fix a typo in README) in the current session. The prompt-chain skill is for building self-contained prompts for work across isolated chat sessions or multi-stage workflows. The skill explicitly excludes \"a single direct task.\" The user needs immediate action, not prompt generation."
+}

@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-reminder",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 15.04,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "User is requesting a simple reminder task for tomorrow to review a proposal. This is a single direct task, not multi-stage work requiring cold-start handoffs or interdependent prompts across isolated chat sessions. The prompt-chain skill is designed for building self-contained prompts that move across sessions, which does not apply here."
+}

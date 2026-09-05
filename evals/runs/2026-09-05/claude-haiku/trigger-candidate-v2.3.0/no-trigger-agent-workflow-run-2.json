@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-agent-workflow",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 20.102,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is requesting direct implementation of an autonomous agent system in this session, not creation of self-contained prompts for execution across isolated chat sessions. The prompt-chain skill is for building multi-session workflows and cold-start handoffs. This is a single direct task that should be built as implementation, not as a chain of prompts to be executed separately."
+}

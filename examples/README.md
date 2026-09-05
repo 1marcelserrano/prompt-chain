@@ -1,6 +1,6 @@
 # Worked examples
 
-Each CHAIN file shows a complete chain in action: the Stage 1 prompt the user pastes, the **actual Stage 2 prompt emitted by the agent** at the end of chat 1 (note the updated dynamic context), and the final `CHAIN COMPLETE` block. The FAN-OUT file shows the dispatcher and the independent prompts it emits.
+Each CHAIN file is an abbreviated, illustrative transcript: the Stage 1 prompt, a representative Stage 2 emission with updated dynamic context, and the final completion shape. Ellipses mark content intentionally omitted for readability; these files are examples, not raw model evidence. Raw evaluation outputs belong under `evals/runs/`. The FAN-OUT file shows the dispatcher, independent prompts, and collector shape.
 
 | Example | Mode | Stages / pieces | Environment | Shows |
 |---|---|---|---|---|

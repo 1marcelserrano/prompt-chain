@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-sequential-repos",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.882,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "User explicitly requests a multi-stage workflow (\"Cada fase vai para uma conversa limpa\" = \"Each phase goes to a clean conversation\") with sequential dependencies: audit repo → fix based on audit results → validate fixes. This is a CHAIN scenario where each stage depends on the previous stage's output and requires isolated chat sessions, matching the prompt-chain skill's core use case."
+}

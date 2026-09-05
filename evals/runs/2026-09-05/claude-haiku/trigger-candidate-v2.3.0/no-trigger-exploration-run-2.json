@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-exploration",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 12.885,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is requesting open-ended collaborative exploration of product names within the current session (\"Explore comigo\"). This is not a multi-stage workflow requiring cold-start handoffs across isolated chat sessions, nor a request for self-contained prompts to execute in separate sessions. The prompt-chain skill explicitly excludes open-ended exploration and single direct tasks in the same session."
+}

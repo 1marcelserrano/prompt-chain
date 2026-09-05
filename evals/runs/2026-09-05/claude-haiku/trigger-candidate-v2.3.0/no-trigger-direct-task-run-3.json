@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-direct-task",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 9.908,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is requesting a direct, single-task correction in the current session. The prompt-chain skill is for multi-stage workflows that span isolated chat sessions with stage dependencies. This is a straightforward correction task with no multi-session handoff required."
+}

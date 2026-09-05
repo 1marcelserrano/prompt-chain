@@ -1,99 +1,139 @@
-# Example — FAN-OUT, 3 independent prompts
+# Illustrative example — FAN-OUT with a collector
 
-Scenario: a typographic decision — call it **DEC-024**: unify headline and emphasis on one variable font and retire the old editorial font stack — is approved and already applied in the design-system repo. It now has to land in three places that **don't depend on each other**:
+Scenario: a typographic decision, **DEC-024**, is approved and already applied in the design-system repo. Three other repositories must adopt it. Their edits are independent, but the operator wants one set-wide verification report after all three return.
 
-1. the editorial skills in a sibling repo that still reference the old fonts,
-2. a docs/format page in the design-system repo whose prose still describes the old stack,
-3. a deploy/render verification + opening the PR for the change.
-
-Routing question — *do the pieces depend on each other's output or state?* **No.** None needs another's result; they only share the same DEC-024 decision. So this is FAN-OUT, not a chain. One self-contained prompt per piece, run in any order, in its own isolated chat. There is no propagation between them and no `CHAIN COMPLETE`.
+Routing: the repository edits are FAN-OUT pieces because none needs another's output. The final verification is a collector because it depends on all three result envelopes. This is a hybrid topology, not a four-stage sequential chain.
 
 ## What the user pastes — the dispatcher
 
 `````markdown
-# DISPATCHER — emit 3 independent FAN-OUT prompts
+# DISPATCHER — emit 3 independent FAN-OUT prompts + 1 collector
 # Set: "DEC-024 propagation"
 
 ## YOUR JOB
-Emit exactly 3 self-contained prompts, one per piece below. Each follows the PIECE TEMPLATE. Emit each in its own 4-backtick fenced block, with NO propagation between them. Do not execute the pieces; just generate the prompts. After the 3 blocks, stop.
+Emit exactly 3 self-contained piece prompts, followed by one COLLECTOR prompt. Do not execute them.
+
+## WORK FRAME — copied verbatim into EVERY prompt
+
+### Original ask
+> Prepare isolated prompts to apply DEC-024 in the skills, docs, and marketing repositories, then verify the set. Make local edits only; do not commit, push, open PRs, or deploy.
+
+### Done
+All three live surfaces use the DEC-024 font mapping, frozen historical assets remain untouched, and one collector report accounts for every repository.
+
+### Work class and risk
+Personal/pre-production refactor; medium risk because an incorrect edit can change rendered typography.
+
+### Budget / checkpoint
+Three independent pieces plus one collector. Every piece returns to this coordinator.
+
+### Undo
+Restore changed files from version control in the affected repository.
+
+### Coordinator
+The original chat that created this dispatcher.
 
 ## WORKSPACE
-Absolute path: varies per piece (stated in each)
+Absolute path: varies per piece
 Target environment: Claude Code
-Conventions: PT-BR; never commit/push without being asked
+Destination / audience: private result for the operator
+Conventions: PT-BR
 
-## SHARED CONTEXT — copied verbatim into EVERY piece
-DEC-024 (2026-06-17): one variable font now governs headline and emphasis in both registers via its optical axis. The old editorial stack (Sans + Caslon + Mono) is retired. Remap: headline → Fraunces (opsz 24–36, wght 340–400); emphasis → Fraunces italic; body → Inter Tight; label → IBM Plex Mono. Color and letter-casing are untouched. Frozen study assets and embedded period mockups are preserved as historical record — do not migrate them.
+## AUTHORITY — copied verbatim into EVERY prompt
+- Authorized in this set: inspect files, make local edits, and run local verification
+- Requires fresh approval: commit, push, open PR, deploy, publish, or change permissions
+- Out of scope: color, casing, frozen studies, and embedded historical mockups
 
-## PIECES (one prompt each)
-1. Skills repo — migrate editorial skills that reference the old fonts. Done when grep shows old fonts only in legacy comments / frozen examples.
-2. Docs/format page — migrate the live prose that still describes the old stack; preserve embedded mockups. Done when the page's live copy names the new stack.
-3. Verify + PR — open the PR and confirm computed render (font-family per element) on the beta deploy. Done when PR URL exists and render is confirmed by computed style.
+## SHARED CONTEXT — copied verbatim into EVERY prompt
 
-## PIECE TEMPLATE (apply to each piece above)
+### Operator decisions — frozen
+- DEC-024: headline and emphasis use Fraunces; body uses Inter Tight; labels use IBM Plex Mono
+- Color and letter-casing stay unchanged
+- Frozen studies and period mockups remain historical records
+
+### Observed facts
+- The design-system source already contains DEC-024
+
+### Shared proposals — not binding until ratified
+- None
+
+### Shared stable context
+Use the design-system source by reference. Do not copy credentials or repository-private content into another chat.
+
+## PIECES
+1. Skills repo — update live editorial skill references. Done when retired fonts remain only in frozen examples or historical notes.
+2. Docs repo — update live format documentation while preserving embedded period mockups.
+3. Marketing repo — update live typography tokens and verify the local computed font family.
+
+## COMBINED RESULT
+Yes — a collector reconciles the three result envelopes and proves the set-wide Done statement.
+
+## PIECE TEMPLATE
 ````markdown
 # [piece name] — piece K of 3 (independent)
 # Set: "DEC-024 propagation"
 
-## WORKSPACE
-Absolute path: `[piece's repo path]`
-Target environment: Claude Code
-Conventions: PT-BR; never commit/push without being asked
+## WORK FRAME / WORKSPACE / AUTHORITY
+[copy the relevant blocks above verbatim; fill this piece's absolute path]
 
 ## SHARED CONTEXT — REQUIRED READING
-[the SHARED CONTEXT block above, verbatim]
+[copy the SHARED CONTEXT above verbatim]
 
 ## THIS PIECE'S TASK
-1. [the piece's concrete actions, each with a "done" criterion]
+1. [piece actions and local checks, each with a done criterion]
 
 ## CONSTRAINTS
-- Do not touch color or casing; do not migrate frozen studies/mockups
+- Do not commit, push, open a PR, or deploy
+- Do not touch color, casing, or historical assets
 
-## DELIVERABLES
-1. [the piece's output]
-2. A short report of what changed + anything left for human decision
+## RESULT FOR COORDINATOR — REQUIRED
+- Piece: K of 3 — [name]
+- Status: [complete / blocked]
+- Deliverables: [paths]
+- Evidence: [searches, tests, or computed-style result]
+- Observed facts added: [...]
+- Stage proposals awaiting ratification: [...]
+- Operator decisions recorded in this piece: [none / quote the decision and its exact scope]
+- Operator decision or approval needed: [none / one narrow question]
 
 ## INDEPENDENCE NOTE
-Self-contained. Shares no dynamic state with the other pieces of "DEC-024 propagation". Run in its own chat, any order. No next prompt to emit — when done, stop. If blocked, ask the user directly (AskUserQuestion if available) — never guess.
+Run in its own chat, in any order. Return the result envelope and stop. Do not emit or execute another piece.
+````
+
+## COLLECTOR TEMPLATE
+````markdown
+# COLLECTOR — DEC-024 propagation
+
+## WORK FRAME / WORKSPACE / AUTHORITY / SHARED CONTEXT
+[copy the same blocks verbatim, including non-binding shared proposals]
+
+## REQUIRED INPUTS
+- Skills repo result: [paste RESULT FOR COORDINATOR]
+- Docs repo result: [paste RESULT FOR COORDINATOR]
+- Marketing repo result: [paste RESULT FOR COORDINATOR]
+
+## TASK
+1. Confirm all three results are present or explicitly waived by the coordinator.
+2. Reconcile contradictory evidence and identify any unverified surface.
+3. Produce one set-wide report. Do not commit, push, open PRs, or deploy.
+
+## COMPLETION
+Emit `### SET COMPLETE` only when every required repository satisfies the Done statement. Otherwise emit `### SET PAUSED` with one narrow question.
 ````
 `````
 
-## What the dispatcher emitted
+## Illustrative piece result
 
-Three independent blocks. Abbreviated here — note each carries the **identical** SHARED CONTEXT, none references another, and none emits a next prompt:
+```markdown
+## RESULT FOR COORDINATOR — REQUIRED
+- Piece: 1 of 3 — Skills repo
+- Status: complete
+- Deliverables: three updated live skill files
+- Evidence: retired-font search now returns only frozen examples and historical notes
+- Observed facts added: one archived example intentionally preserves the old stack
+- Stage proposals awaiting ratification: none
+- Operator decisions recorded in this piece: none
+- Operator decision or approval needed: none
+```
 
-````markdown
-# Skills repo — piece 1 of 3 (independent)
-# Set: "DEC-024 propagation"
-
-## WORKSPACE
-Absolute path: `/path/to/skills-repo`
-Target environment: Claude Code
-Conventions: PT-BR; never commit/push without being asked
-
-## SHARED CONTEXT — REQUIRED READING
-DEC-024 (2026-06-17): one variable font now governs headline and emphasis [...identical block, verbatim...]
-
-## THIS PIECE'S TASK
-1. `grep -rln` the three retired font names; map every occurrence
-2. Migrate the live editorial skills (SKILL.md, templates, specs) to the new stack
-3. Preserve frozen example assets; re-audit until old fonts remain only in legacy comments / frozen examples
-
-## CONSTRAINTS
-- Do not touch color or casing; do not migrate frozen studies/mockups
-
-## DELIVERABLES
-1. Migrated skills + final categorized audit grep
-2. Report of what changed + anything left for human decision
-
-## INDEPENDENCE NOTE
-Self-contained. Shares no dynamic state with pieces 2 and 3. Run in its own chat, any order. No next prompt. If blocked, ask directly — never guess.
-````
-
-(Pieces 2 and 3 follow the same shape — same SHARED CONTEXT verbatim, their own task/path, their own INDEPENDENCE NOTE. Omitted here for length.)
-
-## How it ran
-
-The user opened three chats — in no particular order, two at the same time. Each did its closed task and reported back; none waited on another, and there was no terminator block to collect. Piece 2 hit an ambiguity (was the page "live" or "frozen"?) and paused with an AskUserQuestion — pieces 1 and 3 were unaffected and finished while that decision was pending.
-
-Contrast with a chain: there was nothing to carry forward, so forcing `STAGE 1 → STAGE 2 → STAGE 3` would have serialized three unrelated jobs for no reason and let an early blocker stall the rest. FAN-OUT keeps them independent.
+The other two pieces return the same envelope shape. If one is blocked, the independent pieces still finish, but the collector emits `SET PAUSED` rather than inventing or ignoring the missing evidence. After every required result arrives, the collector may emit `SET COMPLETE`. External publication remains outside the set's authority.

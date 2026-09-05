@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-generic-plan",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 14.21,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "User is requesting a short plan for implementing login—a single, direct planning task. The prompt-chain skill is for multi-stage work that must span isolated chat sessions with cold-start handoffs or independent tasks needing separate prompts. This request is for a single, inline plan that doesn't require splitting across sessions or generating prompts for future isolated work."
+}

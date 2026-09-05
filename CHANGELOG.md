@@ -3,6 +3,27 @@
 All notable changes to this project are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [2.3.0] — 2026-09-05
+
+Makes authority and coordinator return first-class parts of every cold-start prompt.
+
+### Added
+- **Work frame** in CHAIN and FAN-OUT prompts: original ask, done point, work class/risk, budget/checkpoint, undo, and named coordinator.
+- **Authority block** that preserves exact permission and pauses before unapproved publication, messages, PRs, pushes, deploys, merges, spending, deletion, or access changes.
+- **Decision-status separation**: operator decisions, observed facts, and stage proposals travel as different kinds of context. Agent conclusions cannot silently become frozen operator decisions.
+- **Stage reports and fan-out result envelopes** that return evidence and pending decisions to the coordinator.
+- **Optional FAN-OUT collector** for combined results, with `SET COMPLETE` / `SET PAUSED` termination.
+- Structured trigger and behavior eval fixtures, deterministic package builder, repository validator, tests, and CI.
+
+### Changed
+- Skill discovery metadata now follows the portable Agent Skills frontmatter shape and stays below the 1024-character description limit.
+- Domain templates and illustrative examples now carry the v2.3 work-frame, authority, and coordinator contracts.
+- `prompt-chain.skill` is a deterministic generated artifact from the canonical source folder.
+- Compatibility claims now distinguish automatic skill loading from prompts that can be pasted into ordinary chat interfaces.
+
+### Removed
+- The additional attribution sentence after the MIT license text. Project credits remain in the README without adding a second license condition.
+
 ## [2.2.0] — 2026-06-17
 
 Adds a second mode. Until now the skill only did sequential chains and punted everything else to subagents — which miss the cold-start, hand-offable, isolated-chat property when the pieces happen to be independent. FAN-OUT fills that gap.

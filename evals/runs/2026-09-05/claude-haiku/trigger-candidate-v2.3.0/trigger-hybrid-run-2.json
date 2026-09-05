@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-hybrid",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.303,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "User request describes three independent analyses with a final synthesis that depends on all three, to be executed in separate chats. This matches the prompt-chain skill's FAN-OUT + collector pattern explicitly (\"independent pieces need one prompt each, possibly followed by a collector\"). The request triggers on \"um prompt por [tarefa]\" (one prompt per task) and \"chats separados\" (separate chats)."
+}

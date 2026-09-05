@@ -1,4 +1,4 @@
-# Example — 2-stage research chain
+# Illustrative example — 2-stage research chain
 
 Scenario: map the competitors of a small open-source tool and produce a positioning report. Too long for one chat: the census alone eats most of a context window. Split: gather → synthesize.
 
@@ -14,18 +14,50 @@ Scenario: map the competitors of a small open-source tool and produce a position
 - Stage 1: find competitors + one fact sheet each
 - Stage 2: synthesize into positioning report with safe/unsafe claims
 
+## WORK FRAME — COPY VERBATIM
+
+### Original ask
+> Map the open-source competitors of acme-sync in one fresh chat, then synthesize a positioning report in another. Do not publish or contact anyone.
+
+### Done
+A sourced competitor table and a positioning report with three claims that survive public fact-checking.
+
+### Work class and risk
+One-shot research; low risk; a mistaken conclusion is reversed by correcting the report.
+
+### Budget / checkpoint
+Two stages. Return to the original chat after each stage.
+
+### Undo
+Replace unsupported claims and preserve the source table as evidence.
+
+### Coordinator
+The original chat that created this chain.
+
 ## WORKSPACE
 Absolute path: none (chat-only)
 Target environment: claude.ai chat with web search
+Destination / audience: private draft for the operator
+
+## AUTHORITY — COPY VERBATIM
+- Authorized in this chain: public web research and draft creation
+- Requires fresh approval: publication, outreach, or account actions
+- Out of scope: SaaS-only competitors and private data
 
 ## INHERITED CONTEXT — REQUIRED READING
 
 ### Chain goal
 A positioning report for the tool "acme-sync" (open-source file sync CLI): who the competitors are, what each does better, and 3 marketing claims that survive public fact-checking.
 
-### Decisions already made
+### Operator decisions — frozen
 - Only open-source competitors count (no SaaS-only products)
 - Adoption numbers must be verified, never estimated
+
+### Observed facts
+- None yet — Stage 1 collects them
+
+### Stage proposals — not binding until ratified
+- None yet
 
 ### Current state audited (2026-06-12)
 - ✅ EXISTS: nothing yet — this is the first stage
@@ -41,17 +73,27 @@ A positioning report for the tool "acme-sync" (open-source file sync CLI): who t
 
 ## DELIVERABLES
 1. Fact-sheet table, 5–8 competitors
-2. A `### NEXT PROMPT — STAGE 2` block
+2. A `### STAGE REPORT TO COORDINATOR` block
+3. A `### NEXT PROMPT — STAGE 2` block
 
 ## PROPAGATION PROTOCOL — CRITICAL
-At the end of your response, emit a markdown code block containing the complete, self-contained prompt for Stage 2. The next chat will have ZERO memory of this one. The Stage 2 prompt must: open with `# STAGE 2/2 — [NAME]`; copy CHAIN META, WORKSPACE, and all stable INHERITED CONTEXT verbatim; update "Decisions already made", "Current state audited", and `⛔ FAILED` with what you just did; replace the TASK with Stage 2's actions; replace this protocol with FINAL TERMINATION (Stage 2 ends with `### CHAIN COMPLETE`). Include the full fact-sheet table inside the Stage 2 prompt — the next chat cannot see this one. If blocked, emit `### CHAIN PAUSED` instead.
+Return a `STAGE REPORT TO COORDINATOR`, then emit the complete prompt for Stage 2. Copy CHAIN META, WORK FRAME, WORKSPACE, AUTHORITY, and stable context verbatim. Carry verified findings as Observed facts and research judgments as Stage proposals; never promote either to Operator decisions. Include the fact-sheet table, replace the task, and use FINAL TERMINATION. Do not execute Stage 2 here or perform an external effect. If blocked, emit `### CHAIN PAUSED`.
 ````
 
-## What chat 1 emitted at the end of its response
+## Illustrative emission from chat 1
 
 Note the updated dynamic fields — including a dead end recorded in `⛔ FAILED` so chat 2 doesn't retry it:
 
 ````markdown
+### STAGE REPORT TO COORDINATOR
+
+- Status: complete
+- Deliverables: fact-sheet table with 6 competitors
+- Evidence: source links and metrics recorded in the table
+- Observed facts added: 6 verified competitor records
+- Stage proposals awaiting ratification: use rclone and syncthing as reference comparisons
+- Operator decision or approval needed: none for synthesis; publication remains unauthorized
+
 ### NEXT PROMPT — STAGE 2
 
 # STAGE 2/2 — POSITIONING SYNTHESIS
@@ -63,19 +105,50 @@ Note the updated dynamic fields — including a dead end recorded in `⛔ FAILED
 - Stage 1: find competitors + one fact sheet each ✅ done
 - Stage 2: synthesize into positioning report with safe/unsafe claims
 
+## WORK FRAME — COPY VERBATIM
+
+### Original ask
+> Map the open-source competitors of acme-sync in one fresh chat, then synthesize a positioning report in another. Do not publish or contact anyone.
+
+### Done
+A sourced competitor table and a positioning report with three claims that survive public fact-checking.
+
+### Work class and risk
+One-shot research; low risk; a mistaken conclusion is reversed by correcting the report.
+
+### Budget / checkpoint
+Two stages. Return to the original chat after each stage.
+
+### Undo
+Replace unsupported claims and preserve the source table as evidence.
+
+### Coordinator
+The original chat that created this chain.
+
 ## WORKSPACE
 Absolute path: none (chat-only)
 Target environment: claude.ai chat with web search
+Destination / audience: private draft for the operator
+
+## AUTHORITY — COPY VERBATIM
+- Authorized in this chain: public web research and draft creation
+- Requires fresh approval: publication, outreach, or account actions
+- Out of scope: SaaS-only competitors and private data
 
 ## INHERITED CONTEXT — REQUIRED READING
 
 ### Chain goal
 A positioning report for the tool "acme-sync" (open-source file sync CLI): who the competitors are, what each does better, and 3 marketing claims that survive public fact-checking.
 
-### Decisions already made
+### Operator decisions — frozen
 - Only open-source competitors count (no SaaS-only products)
 - Adoption numbers must be verified, never estimated
-- NEW (Stage 1): rclone and syncthing are the two reference competitors; 4 smaller ones included for completeness
+
+### Observed facts
+- Six relevant open-source competitors were verified; their records are in the table below
+
+### Stage proposals — not binding until ratified
+- Use rclone and syncthing as the two reference comparisons; include 4 smaller tools for completeness
 
 ### Current state audited (2026-06-12)
 - ✅ EXISTS: fact-sheet table with 6 competitors (below)
@@ -104,7 +177,7 @@ A positioning report for the tool "acme-sync" (open-source file sync CLI): who t
 This is the last stage. End with `### CHAIN COMPLETE` listing the chain goal, final deliverables, and decisions recorded during both stages. If blocked, emit `### CHAIN PAUSED` instead.
 ````
 
-## What chat 2 emitted at the end
+## Illustrative completion from chat 2
 
 ```markdown
 ### CHAIN COMPLETE
@@ -117,8 +190,8 @@ Positioning report for acme-sync: competitors, strengths, 3 fact-check-proof cla
 - Positioning report with 3 safe claims + 2 claims to avoid (Stage 2)
 
 **Decisions recorded during the chain:**
-- Stage 1: rclone + syncthing set as reference competitors; GitHub topic "file-sync" discarded (archived repos)
-- Stage 2: positioning angle = "single-binary simplicity", the one axis where both references are weaker
+- Operator decisions ratified: only open-source competitors; adoption numbers verified rather than estimated
+- Stage proposals still awaiting ratification: use rclone + syncthing as reference competitors; positioning angle = "single-binary simplicity"
 
 **Next steps outside the chain:**
 Review the 3 claims before publishing the README.

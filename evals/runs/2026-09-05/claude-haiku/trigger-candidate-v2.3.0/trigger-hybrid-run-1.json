@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-hybrid",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.352,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user is requesting prompts for three independent analyses (FAN-OUT pieces) followed by a final synthesis (collector) to be executed in separate chat sessions. This directly matches the prompt-chain skill's FAN-OUT pattern and stated use case for generating prompts across isolated sessions."
+}

@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-sequential-repos",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.452,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user explicitly requests three sequential phases (audit → fix → validate) each running in a \"clean conversation\" (isolated chat sessions). This is a classic prompt-chain use case: multi-stage work where each stage depends on the previous output and must emit a cold-start prompt for the next session. The request matches the skill's stated trigger patterns for staged execution across separate chats."
+}

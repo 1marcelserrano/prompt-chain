@@ -4,6 +4,8 @@ These fixtures test two different boundaries. `trigger-evals.json` asks whether 
 
 The JSON files are test definitions, not model results. A schema-valid fixture does not prove model behavior.
 
+Latest release evidence: [2026-09-05 v2.3.0 run](./runs/2026-09-05/README.md).
+
 ## Comparison protocol
 
 Run every case in a clean context under three conditions:

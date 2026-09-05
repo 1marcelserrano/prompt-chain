@@ -17,19 +17,51 @@ Fill every `[FILL]`, paste into a fresh chat:
 - Stage 2: full draft following the outline, weaknesses flagged
 - Stage 3: cold-read edit + final packaged version
 
+## WORK FRAME — COPY VERBATIM
+
+### Original ask
+> [FILL: the operator's exact words]
+
+### Done
+[FILL: one verifiable statement]
+
+### Work class and risk
+[FILL: production / personal-pre-production / one-shot; risk; what a revert cannot undo]
+
+### Budget / checkpoint
+Three stages. Return to [FILL: coordinator] after each stage.
+
+### Undo
+[FILL: how to restore the prior draft or artifact]
+
+### Coordinator
+[FILL: chat, person, or role]
+
 ## WORKSPACE
 Absolute path: [FILL: path, or "none (chat-only)"]
 Target environment: [FILL: Claude Code / Cowork / claude.ai chat]
+Destination / audience: [FILL]
+
+## AUTHORITY — COPY VERBATIM
+- Authorized in this chain: [FILL: draft / edit / save locally]
+- Requires fresh approval: [FILL: publication, sending, or other external effects]
+- Out of scope: [FILL]
 
 ## INHERITED CONTEXT — REQUIRED READING
 
 ### Chain goal
 [FILL: one verifiable sentence — e.g. "A [N]-word [format] on [topic], ready to paste into [destination]."]
 
-### Decisions already made
+### Operator decisions — frozen
 - Audience: [FILL]
 - Core argument: [FILL: the one thing the piece claims]
 - [FILL: structural choices already locked — format, sections, example policy]
+
+### Observed facts
+- [FILL: source-backed material already established, or "none yet"]
+
+### Stage proposals — not binding until ratified
+- None yet
 
 ### Voice rules (stable — copy verbatim into every stage)
 - [FILL: sentence style, person, register]
@@ -50,8 +82,9 @@ Target environment: [FILL: Claude Code / Cowork / claude.ai chat]
 
 ## DELIVERABLES
 1. Material list with sources + locked outline + chosen core example
-2. A `### NEXT PROMPT — STAGE 2` block
+2. A `### STAGE REPORT TO COORDINATOR` block
+3. When status is complete, a `### NEXT PROMPT — STAGE 2` block; when paused, `### CHAIN PAUSED` instead
 
 ## PROPAGATION PROTOCOL — CRITICAL
-At the end of your response, emit a markdown code block containing the complete, self-contained prompt for Stage 2. The next chat has ZERO memory of this one. The Stage 2 prompt must: open with `# STAGE 2/3 — DRAFT`; copy CHAIN META, WORKSPACE, and the Voice rules verbatim; carry the locked outline, the material list, and the core example in full; update "Current state audited" and `⛔ FAILED` (angles or hooks tried and rejected go here, so the draft doesn't resurrect them); set the task to writing the full draft following the outline, flagging the 2 weakest passages with `[WEAK: reason]`; include this same protocol pointing to Stage 3 (Stage 3 replaces it with FINAL TERMINATION — edit, don't rewrite — and ends with `### CHAIN COMPLETE`). If the outline can't be locked without a decision from the user, emit `### CHAIN PAUSED` with the options instead of choosing silently.
+Return a `STAGE REPORT TO COORDINATOR`. When its status is complete, emit the complete prompt for Stage 2; when paused, emit `CHAIN PAUSED` and no Stage 2 prompt. The next chat has ZERO memory of this one. The Stage 2 prompt must: open with `# STAGE 2/3 — DRAFT`; copy CHAIN META, WORK FRAME, WORKSPACE, AUTHORITY, and the Voice rules verbatim; carry sourced material as observed facts and the outline as a stage proposal until the operator ratifies it; update "Current state audited" and `⛔ FAILED`; set the task to the full draft and include this protocol for Stage 3. Do not execute Stage 2 here or publish/send the piece without exact authorization.
 ````

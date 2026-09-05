@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-chain-pt",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 19.784,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "User requests breaking a migration into dependent stages that run in separate chats, with each stage generating the prompt for the next. This matches the CHAIN variant of prompt-chain skill—the trigger \"executar por etapas em chats separados\" directly applies, and the use case requires cold-start prompts between isolated sessions where each stage depends on the previous output."
+}

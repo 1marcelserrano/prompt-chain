@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-chain-pt",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 11.509,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user request explicitly asks to break a migration into dependent stages where each stage runs in a new chat and generates the prompt for the next. This is the core use case for prompt-chain: building self-contained prompts for sequential, dependent stages that move across isolated chat sessions with cold-start handoffs."
+}

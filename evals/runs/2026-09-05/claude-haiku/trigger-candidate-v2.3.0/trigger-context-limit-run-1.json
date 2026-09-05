@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-context-limit",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.298,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "User explicitly requests work spanning multiple isolated chat sessions without re-explaining context. This directly matches prompt-chain's stated use: \"must move across isolated chat sessions without losing context\" and triggers like \"run each stage in a new chat\" and \"cold-start handoff\". The request is not a single direct task or open-ended exploration."
+}

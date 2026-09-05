@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-model-switch",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 23.285,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user request is asking to build a multi-stage workflow that moves across isolated chat sessions (ChatGPT → Claude Code → back for review). This matches the prompt-chain skill's core use case: building self-contained prompts where each stage depends on the previous output and requires cold-start handoffs between different tools/sessions. The request specifically calls for stage-by-stage execution across separate sessions with context passing, which is exactly what CHAIN mode addresses."
+}

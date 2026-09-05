@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-long-single-output",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 15.17,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is requesting a single, direct deliverable (a 4,000-word report) to be completed in the current conversation session. The prompt-chain skill is explicitly for work that spans isolated chat sessions with handoffs between stages. This request does not match that use case — it's same-session, single-task work. No skill applies."
+}

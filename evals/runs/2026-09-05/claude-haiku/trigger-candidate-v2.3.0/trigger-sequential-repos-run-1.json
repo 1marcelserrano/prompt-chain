@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-sequential-repos",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 9.464,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user explicitly requests sequential phases that move across isolated chat sessions (\"cada fase vai para uma conversa limpa\"). This is a classic CHAIN pattern: audit → fix (using audit results) → validate, where each stage depends on the previous one's output and requires cold-start handoff prompts between sessions."
+}

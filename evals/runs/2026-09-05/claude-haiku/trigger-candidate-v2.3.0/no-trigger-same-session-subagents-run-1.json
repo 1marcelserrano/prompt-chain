@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-same-session-subagents",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 10.818,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user explicitly requests parallel subagents \"nesta mesma sessão\" (in this same session). The prompt-chain skill is designed for work across isolated chat sessions with cold-start handoffs, and explicitly excludes \"same-session parallel subagents.\" This request does not match the skill's stated use case."
+}

@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-checklist",
+  "condition": "candidate-v2.3.0",
+  "run": 3,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 17.445,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "This is a single, direct task requesting a checklist as output. The prompt-chain skill is designed for work that spans isolated chat sessions with handoffs between stages. The user is not asking for multi-stage prompts, cold-start handoffs, or work to be executed across separate chats. This matches the skill's exclusion: \"Do not use for a single direct task.\""
+}

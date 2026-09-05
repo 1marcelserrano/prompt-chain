@@ -17,19 +17,51 @@ Fill every `[FILL]`, paste into a fresh chat:
 - Stage 2: per-channel copy, assets, and a publish schedule with gates
 - Stage 3: publish checklist execution + first-response playbook
 
+## WORK FRAME — COPY VERBATIM
+
+### Original ask
+> [FILL: the operator's exact words, including whether publication is authorized]
+
+### Done
+[FILL: one verifiable statement]
+
+### Work class and risk
+[FILL: production / personal-pre-production / one-shot; risk; what a revert cannot undo]
+
+### Budget / checkpoint
+Three stages. Return to [FILL: coordinator] after each stage.
+
+### Undo
+[FILL: rollback or unpublish path; say when an effect cannot be fully undone]
+
+### Coordinator
+[FILL: chat, person, or role]
+
 ## WORKSPACE
 Absolute path: [FILL: path, or "none (chat-only)"]
 Target environment: [FILL: Claude Code / Cowork / claude.ai chat]
+Destination / audience: [FILL]
+
+## AUTHORITY — COPY VERBATIM
+- Authorized in this chain: [FILL: preparation only, or exact publication action]
+- Requires fresh approval: publish, send, push, deploy, or open a PR unless explicitly authorized above
+- Out of scope: [FILL: channels, accounts, spend, permissions]
 
 ## INHERITED CONTEXT — REQUIRED READING
 
 ### Chain goal
 [FILL: one verifiable sentence — e.g. "X is live on channels A and B, with launch copy approved and a response playbook ready."]
 
-### Decisions already made
+### Operator decisions — frozen
 - [FILL: positioning line — the one sentence that describes the thing]
 - [FILL: channels in scope / out of scope]
 - No claim ships without naming who could refute it
+
+### Observed facts
+- [FILL: verified launch facts, or "none yet"]
+
+### Stage proposals — not binding until ratified
+- None yet
 
 ### Stable context (copy verbatim into every stage)
 - Voice rules: [FILL: short sentences? banned words? language?]
@@ -51,8 +83,9 @@ Target environment: [FILL: Claude Code / Cowork / claude.ai chat]
 
 ## DELIVERABLES
 1. Gap list (fixed or flagged) + claims sheet + launch gate
-2. A `### NEXT PROMPT — STAGE 2` block
+2. A `### STAGE REPORT TO COORDINATOR` block
+3. When status is complete, a `### NEXT PROMPT — STAGE 2` block; when paused, `### CHAIN PAUSED` instead
 
 ## PROPAGATION PROTOCOL — CRITICAL
-At the end of your response, emit a markdown code block containing the complete, self-contained prompt for Stage 2. The next chat has ZERO memory of this one. The Stage 2 prompt must: open with `# STAGE 2/3 — DISTRIBUTION PREP`; copy CHAIN META, WORKSPACE, and all stable INHERITED CONTEXT verbatim; carry the claims sheet and the launch gate in full; update "Current state audited" and `⛔ FAILED` (angles or claims that were tried and dropped go here, with the reason); set the task to per-channel copy + schedule; include this same protocol pointing to Stage 3 (Stage 3 replaces it with FINAL TERMINATION and ends with `### CHAIN COMPLETE`). Never copy credentials or API keys into the next prompt. If the launch gate can't be defined without the user, emit `### CHAIN PAUSED` with the question instead of guessing.
+Return a `STAGE REPORT TO COORDINATOR`. When its status is complete, emit the complete prompt for Stage 2; when paused, emit `CHAIN PAUSED` and no Stage 2 prompt. The next chat has ZERO memory of this one. The Stage 2 prompt must: open with `# STAGE 2/3 — DISTRIBUTION PREP`; copy CHAIN META, WORK FRAME, WORKSPACE, AUTHORITY, and stable INHERITED CONTEXT verbatim; carry verified claims as observed facts and unapproved positioning choices as stage proposals; update "Current state audited" and `⛔ FAILED`; set the task to per-channel copy + schedule and include this protocol for Stage 3. Do not execute Stage 2 here. Stage 3 may publish only when AUTHORITY names the exact channel/action; otherwise it prepares and emits `CHAIN PAUSED` with one approval question. Never copy credentials or API keys.
 ````

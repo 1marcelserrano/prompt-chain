@@ -1,0 +1,12 @@
+{
+  "case_id": "no-trigger-checklist",
+  "condition": "candidate-v2.3.0",
+  "run": 2,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 18.211,
+  "should_trigger": false,
+  "selected": false,
+  "pass": true,
+  "rationale": "The user is asking for a single direct task: creating a pull request review checklist in this session. The prompt-chain skill is designed for building self-contained prompts across isolated chat sessions with dependent stages. This request does not involve multiple stages in separate sessions, cold-start handoffs, or chained prompts—it's a straightforward content creation task that should be completed directly in the current conversation."
+}

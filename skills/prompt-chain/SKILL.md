@@ -1,8 +1,18 @@
 ---
 name: prompt-chain
-version: 2.2.0
-description: Use this skill whenever the user wants to break a complex multi-step task into self-contained prompts run in fresh chat sessions with full context carried forward — in two modes. CHAIN (sequential, each prompt self-propagates the next until CHAIN COMPLETE) and FAN-OUT (independent prompts, one per piece, no ordering, run in any order across isolated chats). Trigger phrases in PT-BR and EN — "executar por etapas em chats separados", "cada etapa em um novo chat", "prompt autocontido autopropagante", "prompt que gera o próximo", "quero passar esse trabalho para vários chats", "um prompt por tarefa", "um prompt por pendência", "vários prompts independentes", "prompts em paralelo para chats separados", "cold start entre chats", "monte um prompt que eu colo em outro chat", "chain of prompts", "self-propagating prompt", "fan out into independent prompts", "one prompt per task", "split this across sessions". Also trigger when the user has a long multi-phase task (P0 → P1 → P2), when they mention context limits or fresh sessions, or when they want to isolate execution between phases — whether the pieces are sequential (CHAIN) or independent (FAN-OUT). Don't wait for exact wording — if the user is distributing work across multiple isolated chat sessions with context preservation, invoke this skill.
-changelog: "V2.2.0 — FAN-OUT mode (independent cold-start prompts, no propagation) + CHAIN vs FAN-OUT routing rule. V2.1.0 — secret sanitization, failed-approaches ledger (⛔ FAILED), reference-over-paste rule, context-budget pruning. V2.0.0 — English as canonical skill body; PT-BR preserved as SKILL.pt-BR.md"
+description: >-
+  Builds self-contained prompts for work that must move across isolated chat
+  sessions without losing context or authority. Use CHAIN when each stage
+  depends on the previous stage's output and must emit the next cold-start
+  prompt. Use FAN-OUT when independent pieces need one prompt each, possibly
+  followed by a collector. Trigger on requests such as "prompt that generates
+  the next", "run each stage in a new chat", "one prompt per task", "cold-start
+  handoff", "executar por etapas em chats separados", or "um prompt por
+  pendência". Do not use for a single direct task, open-ended exploration, or
+  same-session parallel subagents.
+license: MIT
+metadata:
+  version: "2.3.0"
 ---
 
 # Prompt Chain
@@ -11,6 +21,8 @@ Turns a multi-step task into self-contained prompts, each run in a fresh chat wi
 
 - **CHAIN** — sequential. Each prompt runs one stage and ends by emitting the next stage's prompt with the accumulated context already inside it. The user copies and pastes between chats; the chain propagates itself until `CHAIN COMPLETE`. Use when the pieces have an ordering dependency.
 - **FAN-OUT** — independent. One self-contained prompt per piece, all sharing the same stable context but with no propagation between them. The user opens each in its own chat, in any order (or at the same time). Use when the pieces don't depend on each other.
+
+**Prompts carry work, not expanded authority.** Facts, proposals, operator decisions, and permissions keep their original status as they move between chats. A later stage may not silently promote a model conclusion into an operator decision or broaden an authorization.
 
 ## Two modes — how to route
 
@@ -37,7 +49,7 @@ Everything from here down to "FAN-OUT mode" describes CHAIN. The FAN-OUT section
 ## When NOT to use
 
 - Single-step task → solve it directly, no overhead
-- Task whose intermediate state fits in one session with no risk of overflow → TodoWrite + direct execution is better
+- Task whose intermediate state fits in one session with no risk of overflow → a task list plus direct execution is better
 - Exploratory work without discrete deliverables → both modes assume pieces with a clear Definition of Done
 - Same-session parallelism with no need for isolated chats → use parallel subagents instead (they run concurrently in one session). Wanting *isolated* chats for pieces that have no ordering dependency is not a reason to avoid the skill — that's FAN-OUT mode
 
@@ -48,7 +60,7 @@ A chain is a sequence of stages. Each stage:
 2. Executes one slice of the work
 3. Emits the next stage's prompt with updated context
 
-The key insight: **stable context vs dynamic context**.
+Separate **stable context from dynamic context**.
 
 - **Stable** — workspace path, design system, brand voice, global constraints, final goal. Copied verbatim into every stage.
 - **Dynamic** — current file state, decisions made, blockers found. Updated stage by stage.
@@ -59,17 +71,22 @@ In **FAN-OUT** mode there is no dynamic carry-forward — every prompt is stable
 
 ## How to build a chain
 
-### Step 1 — Scope the task and extract stable context
+### Step 1 — Frame the work and extract stable context
 
 Before decomposing, separate out:
 
+- **Original ask, verbatim** — the operator's words, not a plan summary.
 - **Final goal** — what does "chain complete" mean? A single, verifiable statement.
+- **Work class and risk** — production, personal/pre-production, or one-shot; what a revert cannot undo.
+- **Budget / checkpoint** — the agreed slice or time boundary and what happens when it is reached.
+- **Undo** — how to reverse the work if the stage is wrong.
 - **Workspace** — absolute path + conventions (output folder, naming, language).
 - **Constraints that don't change** — design system, compliance, brand voice, output format.
-- **Decisions already made** — what the user has settled and won't reopen.
-- **Target environment** — Claude Code / Cowork / Claude.ai Chat. Each has different tools.
+- **Authority** — what is authorized, what requires fresh approval, and what is out of scope.
+- **Operator decisions** — only what the user has explicitly settled and won't reopen.
+- **Target environment and audience** — what the next chat can access and who will receive the prompt.
 
-This set goes into the INHERITED CONTEXT section of every stage, unchanged.
+The work frame and authority block go into every stage unchanged. Observed facts, stage proposals, current state, and failed approaches are dynamic; their labels travel with them.
 
 ### Step 2 — Decompose into 2 to 6 stages
 
@@ -114,19 +131,51 @@ Copy-paste verbatim, adjusting the content. Every stage in the chain uses this s
 - Stage 2 goal: [...]
 - (every stage summarized in one line each)
 
+## WORK FRAME — COPY VERBATIM
+
+### Original ask
+> [the operator's exact words]
+
+### Done
+[single verifiable statement of what completes the chain]
+
+### Work class and risk
+[production / personal-pre-production / one-shot; low / medium / high; what a revert cannot undo]
+
+### Budget / checkpoint
+[slice or time boundary; return to the coordinator when reached]
+
+### Undo
+[how to reverse this work]
+
+### Coordinator
+[the chat, person, or role that reviews each stage report and authorizes continuation]
+
 ## WORKSPACE
 Absolute path: `[absolute path]`
-Target environment: [Claude Code / Cowork / Chat]
+Target environment: [workspace-capable agent / chat-only agent / other named client]
+[Destination / audience: who receives this prompt and what they can access]
 [Relevant conventions: output folder, naming, language]
+
+## AUTHORITY — COPY VERBATIM
+- Authorized in this chain: [exact actions the original ask permits]
+- Requires fresh approval: [publish / send / open PR / push / deploy / merge / pay / delete / change permissions, unless exactly authorized above]
+- Out of scope: [surfaces and actions this chain must not touch]
 
 ## INHERITED CONTEXT — REQUIRED READING
 
 ### Chain goal
 [Single statement of what "chain complete" means]
 
-### Decisions already made
-- [decision 1 — do not reopen]
-- [decision 2 — do not reopen]
+### Operator decisions — frozen
+- [only explicit operator decision 1 — do not reopen]
+- [only explicit operator decision 2 — do not reopen]
+
+### Observed facts
+- [evidence-backed fact; include source or file path]
+
+### Stage proposals — not binding until ratified
+- [recommendation or judgment produced by a stage]
 
 ### Current state audited ([YYYY-MM-DD])
 - ✅ EXISTS: [files created by previous stages]
@@ -149,16 +198,19 @@ Target environment: [Claude Code / Cowork / Chat]
 1. [file/output 1]
 2. [file/output 2]
 ...
-N. **REQUIRED**: a `### NEXT PROMPT — STAGE N+1` block at the end (or `### CHAIN COMPLETE` if N = TOTAL)
+N. **REQUIRED**: a `### STAGE REPORT TO COORDINATOR` block
+N+1. **REQUIRED WHEN STATUS IS COMPLETE**: a `### NEXT PROMPT — STAGE N+1` block (or `### CHAIN COMPLETE` if N = TOTAL). When status is paused, emit `### CHAIN PAUSED` instead.
 
 ## PROPAGATION PROTOCOL — CRITICAL
-At the end of your response, emit a markdown code block containing the complete, self-contained prompt for Stage N+1. The next chat will have ZERO memory of this one. The Stage N+1 prompt must:
+When this stage is complete, emit a markdown code block containing the complete, self-contained prompt for Stage N+1. When it is paused, emit `### CHAIN PAUSED` and no next-stage prompt. The next chat will have ZERO memory of this one. The Stage N+1 prompt must:
 
 - Open with `# STAGE N+1/TOTAL — [NAME]`
-- Copy CHAIN META, WORKSPACE, and all stable INHERITED CONTEXT (design system / voice / compliance) from this prompt verbatim
-- Update "Decisions already made" and "Current state audited" with what you just did
+- Copy CHAIN META, WORK FRAME, WORKSPACE, AUTHORITY, and all stable INHERITED CONTEXT from this prompt verbatim
+- Update "Observed facts", "Stage proposals", and "Current state audited" with what you just did
+- Update "Operator decisions — frozen" only with an explicit user decision recorded during this stage; never promote a stage proposal on your own
 - Replace the TASK with Stage N+1's action list (see CHAIN META above)
 - Include this same PROPAGATION PROTOCOL for Stage N+2 (or replace it with FINAL TERMINATION if Stage N+1 is the last)
+- Return both the stage report and next prompt to the coordinator; do not start Stage N+1 in this chat
 
 If this stage cannot be completed (blocker, ambiguity, missing input), emit a `### CHAIN PAUSED` block instead of the next prompt (see protocols).
 ````
@@ -167,7 +219,7 @@ If this stage cannot be completed (blocker, ambiguity, missing input), emit a `#
 
 ### PROPAGATION PROTOCOL (stage → next stage)
 
-Every non-final stage response ends with the header:
+Every **complete** non-final stage response ends with the header below. A paused response uses `### CHAIN PAUSED` instead and must not contain a next-stage prompt.
 
 ```
 ### NEXT PROMPT — STAGE N+1
@@ -178,13 +230,36 @@ Followed by a closed markdown code block. **Watch the fence escaping**: since th
 Principles:
 - **Never abbreviate with "same as before"** — the next chat doesn't have the previous one
 - **Copying stable context verbatim is the correct behavior**, not redundancy
-- **Update only the dynamic fields**: Decisions already made, Current state audited, Failed approaches, THIS STAGE'S TASK
+- **Keep authority labels intact** — update Observed facts, Stage proposals, Current state audited, Failed approaches, and THIS STAGE'S TASK; never relabel a proposal as an operator decision
 - **Keep the PROPAGATION PROTOCOL intact** inside the next stage, pointing to the stage after it
 - **Adjust "Current stage"** and update Stage N+1's DoD based on what was just done
-- **Sanitize before propagating** — never copy credentials, API keys, tokens, or personal data into the next prompt. Replace with a placeholder (`[API_KEY — in your env]`); the next chat asks the user only if it truly needs the value
+- **Propagate permission exactly** — an authorization does not widen because a later stage would benefit from it. If the original ask did not authorize the exact external effect, prepare the artifact and pause for approval
+- **Minimize before propagating** — never copy credentials, API keys, or tokens. Replace them with a placeholder (`[API_KEY — in your env]`). Personal or confidential data travels only when the named destination needs it and is authorized to receive it; otherwise redact or reference an accessible local file
 - **Record what failed** — append to the `⛔ FAILED` list every approach this stage tried that didn't work, with the error. A fresh chat with no memory will happily retry a dead end unless the prompt forbids it
 - **Reference files instead of pasting them** when the target environment reads the workspace (Claude Code): pass paths, not contents. Inline content only for chat-only environments (claude.ai, Cowork) where the next session can't open files
 - **Watch the context budget** — if the inherited context grows past roughly a third of the prompt, prune: keep decisions, current state, and failed approaches; cut narration and anything the next chat can re-derive from files
+
+### STAGE REPORT TO COORDINATOR
+
+Every stage returns before the chain advances. Emit this block before the next prompt:
+
+```markdown
+### STAGE REPORT TO COORDINATOR
+
+- Status: [complete / paused]
+- Deliverables: [paths or outputs]
+- Evidence: [checks run and observed result]
+- Observed facts added: [...]
+- Stage proposals awaiting ratification: [...]
+- Operator decisions recorded in this stage: [none / quote the decision and its exact scope]
+- Operator decision or approval needed: [none / one narrow question]
+```
+
+The coordinator reviews this report and may accept the next prompt, revise it, or stop. A report with `Status: paused` must be followed by `CHAIN PAUSED`, never a next-stage prompt. Generating Stage N+1's prompt never authorizes the current chat to execute Stage N+1.
+
+### AUTHORIZATION PROTOCOL
+
+External effects include publishing, sending a message, opening a PR, pushing, deploying, merging, spending money, deleting data, and changing access or permissions. Execute one only when the original ask or a later explicit operator decision authorizes that exact effect for this scope. When authorization is absent or ambiguous, prepare everything reversible, name the pending action in the stage report, and emit `CHAIN PAUSED` with one narrow approval question.
 
 ### CHAIN PAUSED (blocker)
 
@@ -208,7 +283,7 @@ Answer the question above. Then paste this same STAGE N prompt into a new chat, 
 
 **Master rule:** pausing always beats guessing. A guess at stage N contaminates every following stage, and the user only finds the error at the end.
 
-**Refine, don't just halt:** if the environment has the AskUserQuestion tool, use it at the moment of the pause — put the blocker to the user as a direct question with 2–4 concrete options (each with its trade-off), and apply the answer to refine the approach before emitting the resume prompt. The CHAIN PAUSED block still gets emitted; AskUserQuestion runs alongside it so the decision lands now instead of in the next chat. In environments without the tool, the block's written question is the fallback.
+**Refine at the pause:** if the environment can ask the user interactively, use that capability at the moment of the pause. Put the blocker to the user as a direct question with 2–4 concrete options, each with its trade-off, and apply the answer before emitting the resume prompt. Emit the `CHAIN PAUSED` block as well so the state remains portable. In environments without an interactive question capability, use the block's written question.
 
 ### CHAIN COMPLETE (last stage)
 
@@ -226,8 +301,8 @@ The last stage replaces the next-prompt block with:
 ...
 
 **Decisions recorded during the chain:**
-- Stage 1: [...]
-- Stage 2: [...]
+- Operator decisions ratified: [...]
+- Stage proposals still awaiting ratification: [...]
 ...
 
 **Next steps outside the chain:**
@@ -257,13 +332,16 @@ For each stage, ask: *"If a completely different agent opened this prompt with n
 The user pays the chain's price when stable context is incomplete. Include whenever applicable:
 
 - [ ] Absolute workspace path (not relative)
-- [ ] Target environment (Claude Code / Cowork / Chat) — it changes the available tools
+- [ ] Target environment and client — they determine which tools and workspace files are available
+- [ ] Original ask, done point, budget/checkpoint, undo, and coordinator
+- [ ] Exact authority: authorized actions, fresh-approval actions, and out-of-scope surfaces
 - [ ] Design system / tokens inline in the prompt for chat-only environments; file paths are enough when the target environment reads the workspace
 - [ ] Brand voice and tone (if relevant)
 - [ ] Compliance / hard rules (if any)
 - [ ] Conventions (naming, date format, language)
 - [ ] The chain's final goal (not just this stage's)
-- [ ] No secrets — credentials and tokens never travel in the chain
+- [ ] Decisions, facts, and proposals are labeled separately
+- [ ] No secrets; personal or confidential data is minimized for the named destination
 
 ## Minimal example — 2-stage chain
 
@@ -281,19 +359,50 @@ Scenario: refactor `styles.css` + validate responsive behavior.
 - Stage 1: extract tokens + consolidate duplicates
 - Stage 2: test viewports + final adjustments
 
+## WORK FRAME — COPY VERBATIM
+
+### Original ask
+> Refactor styles.css and validate responsive behavior in separate cold-start stages. Do not change visual output.
+
+### Done
+styles.css is under 600 lines and renders identically at 320px, 768px, and 1440px.
+
+### Work class and risk
+Personal/pre-production; medium risk because visual regressions can survive a clean build.
+
+### Budget / checkpoint
+Two stages. Return to the coordinator after each one.
+
+### Undo
+Revert the stage commit or restore styles.css from version control.
+
+### Coordinator
+The chat that created this chain.
+
 ## WORKSPACE
 Absolute path: `/Users/name/project/`
 Target environment: Claude Code
+
+## AUTHORITY — COPY VERBATIM
+- Authorized in this chain: edit styles.css and run local checks
+- Requires fresh approval: commit, push, deploy, or modify HTML
+- Out of scope: markup, JavaScript, dependencies, and public environments
 
 ## INHERITED CONTEXT
 
 ### Chain goal
 Reduce styles.css from 1200 → < 600 lines keeping visual output identical at 320px, 768px, and 1440px.
 
-### Decisions already made
+### Operator decisions — frozen
 - Use CSS custom properties (not Sass)
 - Keep the BEM convention
 - No preprocessors
+
+### Observed facts
+- styles.css has 1247 lines and repeated values
+
+### Stage proposals — not binding until ratified
+- None yet
 
 ### Current state audited (2026-04-23)
 - ✅ EXISTS: styles.css (1247 lines, many duplicates)
@@ -311,7 +420,8 @@ Reduce styles.css from 1200 → < 600 lines keeping visual output identical at 3
 
 ## DELIVERABLES
 1. Refactored styles.css
-2. A `### NEXT PROMPT — STAGE 2` block
+2. A `### STAGE REPORT TO COORDINATOR` block
+3. A `### NEXT PROMPT — STAGE 2` block
 
 ## PROPAGATION PROTOCOL
 [...full instruction as in the template...]
@@ -328,10 +438,11 @@ Same isolation and cold-start safety as a chain, minus the propagation. Use it w
 
 ### How to build a fan-out
 
-1. **Extract stable context once** — same as Step 1 for a chain: workspace path, conventions, design system, brand voice, hard constraints, and the shared decision or spec being propagated. This block is copied verbatim into *every* prompt.
+1. **Frame the set once** — carry the same WORK FRAME, WORKSPACE, AUTHORITY, operator decisions, and stable context into every piece.
 2. **List the independent pieces** — one line each, with its own Definition of Done. If two pieces turn out to share dynamic state, they aren't independent — collapse them into a 2-stage chain and treat that chain as a single piece of the fan-out.
-3. **Write one self-contained prompt per piece** — each carries the full stable context plus that piece's task. No CHAIN META, no PROPAGATION PROTOCOL, no next-prompt emission.
-4. **(Optional) Write a dispatcher** — a single root prompt that holds the stable context once and emits all N piece-prompts in one response. Useful when you want one chat to generate the set and then distribute the pieces.
+3. **Write one self-contained prompt per piece** — each carries the full stable context plus that piece's task and returns a structured result to the coordinator. No CHAIN META, no PROPAGATION PROTOCOL, no next-prompt emission.
+4. **Add a collector when the set has a combined result** — synthesis, conflict resolution, or a set-wide done verdict depends on all required result envelopes. The collector is a dependent step after the fan-out, not another independent piece.
+5. **Optionally write a dispatcher** — a single root prompt that holds the stable context once and emits all N piece-prompts, plus the collector when needed. The dispatcher generates prompts; it does not execute them.
 
 ### Canonical FAN-OUT prompt template
 
@@ -341,13 +452,33 @@ Copy-paste verbatim, adjusting the content. Every piece in the fan-out uses this
 # [TASK NAME] — piece K of N (independent)
 # Set: "[FAN-OUT NAME]"
 
+## WORK FRAME — COPY VERBATIM
+[Original ask, Done, Work class and risk, Budget / checkpoint, Undo, Coordinator]
+
 ## WORKSPACE
 Absolute path: `[absolute path]`
-Target environment: [Claude Code / Cowork / Chat]
+Target environment: [workspace-capable agent / chat-only agent / other named client]
+[Destination / audience]
 [Conventions: output folder, naming, language]
 
+## AUTHORITY — COPY VERBATIM
+- Authorized for this piece: [exact actions]
+- Requires fresh approval: [external effects not already authorized]
+- Out of scope: [untouchable actions and surfaces]
+
 ## SHARED CONTEXT — REQUIRED READING
-[The stable block, copied verbatim into every piece: the shared decision / spec, design system, voice, hard constraints. Identical across all N prompts.]
+
+### Operator decisions — frozen
+- [explicit operator decisions only]
+
+### Observed facts
+- [evidence-backed facts shared by every piece]
+
+### Shared proposals — not binding until ratified
+- [inherited model recommendation relevant to every piece]
+
+### Shared stable context
+[The stable specification, design system, voice, and hard constraints. Identical across all N prompts.]
 
 ## THIS PIECE'S TASK
 1. [concrete action with a "done" criterion]
@@ -358,17 +489,52 @@ Target environment: [Claude Code / Cowork / Chat]
 
 ## DELIVERABLES
 1. [file / output]
-2. A short report of what changed + anything left for human decision
+2. The result envelope below
+
+## RESULT FOR COORDINATOR — REQUIRED
+- Piece: K of N — [name]
+- Status: [complete / blocked]
+- Deliverables: [paths or outputs]
+- Evidence: [checks run and observed result]
+- Observed facts added: [...]
+- Stage proposals awaiting ratification: [...]
+- Operator decisions recorded in this piece: [none / quote the decision and its exact scope]
+- Operator decision or approval needed: [none / one narrow question]
 
 ## INDEPENDENCE NOTE
 This prompt is self-contained and shares no dynamic state with the other pieces of "[FAN-OUT NAME]". Run it in its own chat, in any order. There is no next prompt to emit — when the task and deliverables are done, stop. If blocked, ask the user directly (see below) rather than guessing.
 ````
 
-Note what is *absent* versus a CHAIN stage: no CHAIN META, no "Current state audited" carrying forward, no PROPAGATION PROTOCOL, no `CHAIN COMPLETE`. A fan-out prompt opens, does its closed task, reports, and ends.
+A fan-out piece has no CHAIN META, dynamic state shared with other pieces, PROPAGATION PROTOCOL, or per-piece `CHAIN COMPLETE`. It opens, does its closed task, returns its result envelope, and ends.
 
 ### Dispatcher (optional root prompt)
 
-When you want one chat to generate the whole set, use a dispatcher: state the stable context once, list the N pieces, and instruct the agent to emit N self-contained prompts — each following the template above, one fenced block per piece, with no propagation between them. The dispatcher is a generator, not an executor: it produces the prompts; you distribute them. Use a **4-backtick** fence (or `~~~~`) on each emitted block so inner triple backticks don't close it early.
+When you want one chat to generate the whole set, use a dispatcher: state the frame and stable context once, list the N pieces, and instruct the agent to emit N self-contained prompts — each following the template above, one fenced block per piece, with no propagation between them. If the set needs a combined result, the dispatcher also emits one collector prompt. It is a generator, not an executor. Use a **4-backtick** fence (or `~~~~`) on each emitted block so inner triple backticks don't close it early.
+
+### Collector (when the set has a combined result)
+
+Run the collector only after every required piece has returned `RESULT FOR COORDINATOR` or the coordinator has explicitly accepted a missing piece. Give it the original frame, shared context with every status label intact, and the result envelopes — not the full production chats.
+
+```markdown
+# COLLECTOR — [FAN-OUT NAME]
+
+## WORK FRAME / WORKSPACE / AUTHORITY / SHARED CONTEXT
+[copy the same blocks verbatim, including non-binding shared proposals]
+
+## REQUIRED INPUTS
+- Required piece 1 result: [paste RESULT FOR COORDINATOR]
+- Required piece 2 result: [paste RESULT FOR COORDINATOR]
+- ...
+- Required piece N result: [paste RESULT FOR COORDINATOR]
+
+## TASK
+1. Verify that every required piece is present or explicitly waived by the coordinator.
+2. Reconcile conflicts, duplicates, and gaps without inventing missing evidence.
+3. Produce the combined deliverable and a set-wide completion report.
+
+## COMPLETION
+Emit `### SET COMPLETE` only when the combined Done statement is true. Otherwise emit `### SET PAUSED` with one narrow question for the coordinator.
+```
 
 ### CHAIN vs FAN-OUT at a glance
 
@@ -377,19 +543,21 @@ When you want one chat to generate the whole set, use a dispatcher: state the st
 | Ordering | Sequential, load-bearing | None — any order, even at once |
 | Between prompts | Each emits the next (propagation) | Nothing — fully independent |
 | Dynamic state | Carried forward stage to stage | None — stable context only |
-| Completion | Last stage emits `CHAIN COMPLETE` | Each prompt just reports; no global terminator |
+| Completion | Last stage emits `CHAIN COMPLETE` | Each piece returns a result; collector emits `SET COMPLETE` when a combined result is required |
 | Blocker | `CHAIN PAUSED` (poisons downstream if guessed) | Each prompt pauses alone; the others are unaffected |
-| Build artifact | One seed prompt (Stage 1) | N prompts, or one dispatcher that emits them |
+| Build artifact | One seed prompt (Stage 1) | N prompts, optionally a dispatcher and collector |
 
 ### Blockers in fan-out
 
-Each prompt handles its own blocker in isolation. There is no downstream chain to contaminate, so a blocked piece just pauses and asks while the others proceed untouched. Same rule as a chain: if the AskUserQuestion tool is available, put the blocker as a direct question with 2–4 concrete options; otherwise state it in the deliverables and stop. **Pausing still beats guessing**, and secret sanitization still applies — no credentials, tokens, or personal data in any prompt; use placeholders.
+Each prompt handles its own blocker in isolation. There is no downstream chain to contaminate, so a blocked piece returns its result envelope with one narrow question while the others proceed untouched. Use the environment's user-question capability when available; otherwise write the question and stop. **Pausing still beats guessing.** Credentials and tokens never travel. Personal or confidential data is minimized for the named destination.
 
 ### Signs a fan-out was applied well
 
 - Every piece-prompt pastes cold into its own chat with no manual editing
 - All pieces share *identical* stable context — fill it once, fill it well
 - No piece waits on another, and none references "the previous chat"
+- Every piece returns a result envelope to the named coordinator
+- A combined result is declared complete only by a collector that saw every required result or an explicit waiver
 - If you find yourself threading one piece's output into another, it wasn't independent — it should have been a CHAIN
 
 ## Signs the skill was applied well
@@ -400,5 +568,6 @@ The chain is well built when:
 - The last stage emits `### CHAIN COMPLETE` with every deliverable listed
 - The user never had to explain anything again between stages
 - If a stage failed, it emitted `### CHAIN PAUSED` with a direct question — it didn't guess
+- No stage broadened authority or promoted an unratified proposal into an operator decision
 
 The skill's value: the user goes from *"I have to explain everything again every time I open a chat"* to *"pasted it, chain ran."*

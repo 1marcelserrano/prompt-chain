@@ -1,0 +1,12 @@
+{
+  "case_id": "trigger-fanout-pt",
+  "condition": "candidate-v2.3.0",
+  "run": 1,
+  "model_request": "claude:haiku",
+  "date": "2026-09-05",
+  "latency_seconds": 17.568,
+  "should_trigger": true,
+  "selected": true,
+  "pass": true,
+  "rationale": "The user's request matches the prompt-chain skill's FAN-OUT scenario: they have six independent tasks and explicitly want a self-contained prompt for each one to open in separate chats. This is a cold-start handoff scenario, which is the skill's primary use case."
+}

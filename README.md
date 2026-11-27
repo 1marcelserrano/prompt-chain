@@ -1,6 +1,6 @@
 # prompt-chain
 
-**English** · [Português](./skills/prompt-chain/SKILL.pt-BR.md)
+**English** · [Português para iniciantes](./README.pt-BR.md) · [Skill em português](./skills/prompt-chain/SKILL.pt-BR.md)
 
 **Break complex multi-step work into authority-safe prompts for fresh chats — chained (sequential) or fanned out (independent).**
 

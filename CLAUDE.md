@@ -12,6 +12,7 @@ of truth is `skills/prompt-chain/SKILL.md`. Every behavioral change starts there
 | `skills/prompt-chain/SKILL.md` | Skill behavior — triggers, workflow, output format. The body the agent loads. English, canonical. |
 | `skills/prompt-chain/SKILL.pt-BR.md` | Portuguese reference translation. Mirror behavioral changes here after SKILL.md stabilizes. |
 | `skills/prompt-chain/README.md` | Per-skill human-facing summary. |
+| `README.pt-BR.md` | Front door em português para quem nunca instalou uma skill. No mesmo molde do README da Fila de Prioridades: sem terminal no caminho principal. Mantenha em dia com o `README.md`. |
 | `README.md` (root) | Product front door. Optimize for non-technical readers. Before/After table is the pitch. |
 | `examples/` | Worked chains showing real propagation. Keep each example's Stage 2 consistent with the current STAGE template. |
 | `CONTRIBUTING.md` | How to contribute. |

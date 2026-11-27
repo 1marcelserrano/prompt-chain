@@ -106,8 +106,9 @@ A skill não acrescenta armazenamento nem serviço externo. O que você cola vai
 Sem rodeio, para você saber no que está pisando:
 
 - O pacote da skill passa nas verificações automáticas do projeto, rodadas em 27/11/2026.
-- O mesmo caminho de envio (Customize, Skills, + Add, Upload a skill) foi testado pelo autor com outra skill, a Fila de Prioridades: o Claude aceitou o arquivo `.skill` direto, sem renomear, e a skill já entrou ativada.
-- **Ainda não provado:** o envio do `prompt-chain.skill` em si, a frase "executar por etapas em chats separados" numa conta de verdade e um passo a passo seguido por quem não é o autor.
+- O autor enviou o `prompt-chain.skill` na própria conta e a skill funcionou (relato dele, uma conta, sem registro de cada tela).
+- O mesmo caminho de envio (Customize, Skills, + Add, Upload a skill) foi testado com a Fila de Prioridades: o Claude aceitou o arquivo `.skill` direto, sem renomear, e a skill já entrou ativada.
+- **Ainda não provado:** o passo a passo seguido por quem não é o autor e a troca de `.skill` para `.zip`, que não foi preciso em nenhum teste.
 
 ## Comunidade gratuita
 
